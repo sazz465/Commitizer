@@ -1,0 +1,14 @@
+firmware: Migrate firmware_Fingerprint.RDP0 autotest to Tast
+
+BUG=b:177029521,b:153736350
+TEST=tast -verbose run -var servo=localhost:9999 &lt;IP&gt;
+	firmware.FpAddEntropy
+TEST=tast -verbose run -var servo=localhost:9999 &lt;IP&gt;
+	firmware.FpRDP0
+
+Change-Id: <a href="https://chromium-review.googlesource.com/#/q/Ic10c324a02ece33bbc0e28fd2801ee3003680c32">Ic10c324a02ece33bbc0e28fd2801ee3003680c32</a>
+Reviewed-on: <a href="https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2738704">https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2738704</a>
+Tested-by: Yicheng Li &lt;yichengli@chromium.org&gt;
+Reviewed-by: Tom Hughes &lt;tomhughes@chromium.org&gt;
+Reviewed-by: Shuo-Peng Liao &lt;deanliao@chromium.org&gt;
+Commit-Queue: Yicheng Li &lt;yichengli@chromium.org&gt;

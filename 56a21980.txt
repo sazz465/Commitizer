@@ -1,0 +1,19 @@
+tast-tests: Enable ChromeVox hint for dev mode.
+
+This is a follow-up to the following change:
+<a href="https://chromium-review.googlesource.com/c/chromium/src/+/2747223">https://chromium-review.googlesource.com/c/chromium/src/+/2747223</a>
+
+The above change disables the ChromeVox hint by default when the
+device is in dev mode. To ensure we maintain test coverage, enable
+the ChromeVox hint in dev mode for tast tests by adding the necessary
+command line flag.
+
+BUG=b:182245799
+TEST=N/A
+AX-Relnotes: N/A
+
+Change-Id: <a href="https://chromium-review.googlesource.com/#/q/Ie4c667ba6d98302cf25ceb974e2c632bfe604a3a">Ie4c667ba6d98302cf25ceb974e2c632bfe604a3a</a>
+Reviewed-on: <a href="https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2746794">https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2746794</a>
+Tested-by: Akihiro Ota &lt;akihiroota@chromium.org&gt;
+Commit-Queue: Akihiro Ota &lt;akihiroota@chromium.org&gt;
+Reviewed-by: Victor-Gabriel Savu &lt;vsavu@google.com&gt;

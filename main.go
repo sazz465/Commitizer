@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/mafredri/cdp"
@@ -17,7 +18,7 @@ import (
 type CommitDetails struct {
 	Hash           string `json:"hash"`
 	Author         string `json:"author"`
-	NextCommitHash string `json:"nexthash"`
+	NextCommitHref string `json:"nexthash"`
 }
 
 type DocumentInfo struct {
@@ -27,11 +28,14 @@ type DocumentInfo struct {
 }
 
 var (
-	myURL = "https://chromium.googlesource.com/chromiumos/platform/tast-tests/"
+	myURL      = "https://chromium.googlesource.com/chromiumos/platform/tast-tests/"
+	numCommits = 10
 )
 
 func main() {
-	err := run(5 * time.Second)
+	args := os.Args
+	fmt.Println(args)
+	err := run(10 * time.Second)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -60,7 +64,7 @@ func run(timeout time.Duration) error {
 
 	c := cdp.NewClient(conn)
 
-	domLoadTimeout := 5 * time.Second
+	domLoadTimeout := 50 * time.Second
 	err = navigate(ctx, c.Page, myURL, domLoadTimeout)
 	if err != nil {
 		return err
@@ -108,7 +112,7 @@ func run(timeout time.Duration) error {
 	if err = json.Unmarshal(eval_branch_URL.Result.Value, &info); err != nil {
 		return err
 	}
-	fmt.Printf("\nDocument Main branch URL : %q\n", info.BranchURL)
+	// fmt.Printf("\nDocument Main branch URL : %q\n", info.BranchURL)
 
 	// Navigate to main branch
 	err = navigate(ctx, c.Page, info.BranchURL, domLoadTimeout)
@@ -117,40 +121,38 @@ func run(timeout time.Duration) error {
 	}
 	fmt.Printf("\nNavigated to: %s\n", info.BranchURL)
 
-	// Document commit msg
-	evalArgs_commit_msg := runtime.NewEvaluateArgs(expression_commit_msg).SetAwaitPromise(true).SetReturnByValue(true)
-	eval_commit_msg, err := c.Runtime.Evaluate(ctx, evalArgs_commit_msg)
-	if err != nil {
-		return err
-	}
-	if err = json.Unmarshal(eval_commit_msg.Result.Value, &info); err != nil {
-		return err
-	}
-	fmt.Printf("\nDocument commit msg is : %q\n", info.CommitMessage)
+	commitIndex := 0
+	for commitIndex < numCommits {
+		commitMessage, details, err := commit_iterator(ctx, timeout, c, expression_commit_msg, expression_metadata)
+		select {
+		case <-ctx.Done():
+			log.Println("\nInfo:Please consider increasing timeout")
+			return ctx.Err()
+		default:
+		}
 
-	// Get metadata table
-	evalArgs_metadata := runtime.NewEvaluateArgs(expression_metadata).SetAwaitPromise(true).SetReturnByValue(true)
-	eval_metadata, err := c.Runtime.Evaluate(ctx, evalArgs_metadata)
-	if err != nil {
-		return err
-	}
-	if err = json.Unmarshal(eval_metadata.Result.Value, &info); err != nil {
-		return err
-	}
-	fmt.Printf("\nMetadata Table: %q\n", info.Metadata)
+		if err != nil {
+			return err
+		}
 
-	// var details CommitDetails
+		err = make_commit_file(commitMessage, details.Hash)
+		if err != nil {
+			return err
+		}
 
-	// Write all page HTML into HTML.txt
-	// f, err := os.Create("HTML.txt")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// defer f.Close()
-	// _, err2 := f.WriteString(result.OuterHTML)
-	// if err2 != nil {
-	// 	log.Fatal(err2)
-	// }
+		// go make_commit_file(commitMessage, details.Hash)
+
+		err = navigate(ctx, c.Page, details.NextCommitHref, domLoadTimeout)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("\nNavigated to: %s\n", details.NextCommitHref)
+
+		commitIndex += 1
+		fmt.Println(commitIndex)
+
+	}
+
 	return nil
 }
 
@@ -181,6 +183,54 @@ func navigate(ctx context.Context, pageClient cdp.Page, url string, timeout time
 
 	_, err = domContentEventFired.Recv()
 	return err
+}
+func make_commit_file(commit_message string, commit_hash string) error {
+	f, err := os.Create(commit_hash + ".txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+	_, err2 := f.WriteString(commit_message)
+	if err2 != nil {
+		log.Fatal(err2)
+	}
+	return err
+}
+
+func commit_iterator(ctx context.Context, timeout time.Duration, c *cdp.Client, expression_commit_msg string, expression_metadata string) (string, CommitDetails, error) {
+	var cancel context.CancelFunc
+	ctx, cancel = context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	var info DocumentInfo
+	var details CommitDetails
+	// Document commit msg
+	evalArgs_commit_msg := runtime.NewEvaluateArgs(expression_commit_msg).SetAwaitPromise(true).SetReturnByValue(true)
+	eval_commit_msg, err := c.Runtime.Evaluate(ctx, evalArgs_commit_msg)
+	if err != nil {
+		return info.CommitMessage, details, err
+	}
+	if err = json.Unmarshal(eval_commit_msg.Result.Value, &info); err != nil {
+		return info.CommitMessage, details, err
+	}
+	// fmt.Printf("\nDocument commit msg is : %q\n", info.CommitMessage)
+
+	// Get metadata table
+	evalArgs_metadata := runtime.NewEvaluateArgs(expression_metadata).SetAwaitPromise(true).SetReturnByValue(true)
+	eval_metadata, err := c.Runtime.Evaluate(ctx, evalArgs_metadata)
+	if err != nil {
+		return info.CommitMessage, details, err
+	}
+	if err = json.Unmarshal(eval_metadata.Result.Value, &info); err != nil {
+		return info.CommitMessage, details, err
+	}
+	// fmt.Printf("\nMetadata Table: %q\n", info.Metadata)
+
+	details = CommitDetails{Hash: info.Metadata[0][:8], Author: info.Metadata[1], NextCommitHref: info.Metadata[2]}
+
+	// fmt.Printf("\nMetadata Table: %q\n", details)
+
+	return info.CommitMessage, details, nil
 }
 
 // func get_commit(ctx context.Context, )  {
