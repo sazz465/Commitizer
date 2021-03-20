@@ -1,0 +1,19 @@
+Run UIAutomator Test Using Tast For Asana app
+
+BUG=b:171985958
+TEST=tast run &lt;eve&gt; arcappcompat.Asana
+
+Tast Test for Asana app verifies launch app
+from the playstore, check app reached
+main activity page of the app. Also for Clamshell
+Mode it verifies Clamshell Full Screen, Minimize
+and Restore, Clamshell Resize, Reopen tests and
+for Touchview Mode it verifies Minimize and Restore,
+Reopen tests.
+
+Cq-Depend: chrome-internal:3442614
+Change-Id: <a href="https://chromium-review.googlesource.com/#/q/I14bf8c0d6bcc912f891d1d08d009db51bb6f6408">I14bf8c0d6bcc912f891d1d08d009db51bb6f6408</a>
+Reviewed-on: <a href="https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2570000">https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2570000</a>
+Tested-by: Archana Singh &lt;archanasing@chromium.org&gt;
+Reviewed-by: Brendan Hansknecht &lt;bhansknecht@chromium.org&gt;
+Commit-Queue: Archana Singh &lt;archanasing@chromium.org&gt;

@@ -1,0 +1,16 @@
+tast: Add no_kernel_upstream dep to wifi.Driver.
+
+Make wifi.Driver depend on "no_kernel_upstream" feature. The test fails
+on the DUT that has kernel-upstream, because they have unexpected
+kernel versions.
+
+BUG=b:182314339
+TEST=none
+
+Cq-Depend: chromium:2765436
+Change-Id: <a href="https://chromium-review.googlesource.com/#/q/I8a9e30a142cdc5ad4150780d1b514fd3206cdaaf">I8a9e30a142cdc5ad4150780d1b514fd3206cdaaf</a>
+Reviewed-on: <a href="https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2766387">https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2766387</a>
+Tested-by: Arowa Suliman &lt;arowa@chromium.org&gt;
+Reviewed-by: Brian Norris &lt;briannorris@chromium.org&gt;
+Reviewed-by: Shuo-Peng Liao &lt;deanliao@chromium.org&gt;
+Commit-Queue: Arowa Suliman &lt;arowa@chromium.org&gt;

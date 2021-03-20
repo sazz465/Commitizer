@@ -33,12 +33,12 @@ var (
 	myURL      = flag.String("repoURL", "https://chromium.googlesource.com/chromiumos/platform/tast-tests/", "Repository URL to obtain the commits from")
 	numCommits = flag.Int("numberCommits", 10, "Number of commits to be obtained")
 	branchName = flag.String("branchName", "main", "Name of the branch name on the first page to start the commitzer process")
+	timeout    = flag.Int("timeout", 15, "Sets the context timeout value")
 )
 
 func main() {
-	args := os.Args[1:]
-	fmt.Println("Args are ", args)
-	err := run(10 * time.Second)
+	flag.Parse()
+	err := run(time.Duration(*timeout * int(time.Second)))
 	if err != nil {
 		log.Fatal(err)
 	}

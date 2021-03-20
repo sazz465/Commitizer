@@ -1,0 +1,15 @@
+csv: move util file out of bundles/cros/platform
+
+This file should be located outside of bundles in local with other
+helper or util files. This allows the file to be included from other
+packages outside of platform.
+
+BUG=b:173062841
+TEST=tast run hatch-dut platform.CrosHealthdProbeSystemInfo (pass)
+Disallow-Recycled-Builds: all
+
+Change-Id: <a href="https://chromium-review.googlesource.com/#/q/Iddd4c7ff43c8b7965d49885819a0ba07298bf0e1">Iddd4c7ff43c8b7965d49885819a0ba07298bf0e1</a>
+Reviewed-on: <a href="https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2597482">https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2597482</a>
+Tested-by: Trent Begin &lt;tbegin@chromium.org&gt;
+Commit-Queue: Trent Begin &lt;tbegin@chromium.org&gt;
+Reviewed-by: Po-Hsien Wang &lt;pwang@chromium.org&gt;
