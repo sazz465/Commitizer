@@ -1,0 +1,14 @@
+meta: Add a local test to disrupt SSH connection
+
+meta.DisruptSSH is a local test that terminates the sshd process
+running the current test bundle process. This test can be used to
+test the reconnect logic of Tast CLI.
+
+BUG=chromium:1179179
+TEST=tast run $DUT meta.DisruptSSH
+
+Change-Id: <a href="https://chromium-review.googlesource.com/#/q/I6b59e5c25c750130055560bcc174374b69060c50">I6b59e5c25c750130055560bcc174374b69060c50</a>
+Reviewed-on: <a href="https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2755307">https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2755307</a>
+Tested-by: Shuhei Takahashi &lt;nya@chromium.org&gt;
+Reviewed-by: Seewai Fu &lt;seewaifu@google.com&gt;
+Commit-Queue: Shuhei Takahashi &lt;nya@chromium.org&gt;

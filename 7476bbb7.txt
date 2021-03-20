@@ -1,0 +1,12 @@
+health.DiagnosticsCancel.urandom: enable test as critical
+
+BUG=b:173062841
+TEST=tast run sarien-dut health.DiagnosticsCancel* (pass)
+
+Change-Id: <a href="https://chromium-review.googlesource.com/#/q/Ia11f8e59c694fbaf331ee75f2be9c3e85983388c">Ia11f8e59c694fbaf331ee75f2be9c3e85983388c</a>
+Reviewed-on: <a href="https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2775836">https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2775836</a>
+Tested-by: Trent Begin &lt;tbegin@chromium.org&gt;
+Auto-Submit: Trent Begin &lt;tbegin@chromium.org&gt;
+Reviewed-by: Victor-Gabriel Savu &lt;vsavu@google.com&gt;
+Reviewed-by: Ben Reich &lt;benreich@chromium.org&gt;
+Commit-Queue: Ben Reich &lt;benreich@chromium.org&gt;

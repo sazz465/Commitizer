@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -22,19 +23,21 @@ type CommitDetails struct {
 }
 
 type DocumentInfo struct {
-	BranchURL     string   `json:"branch"`
+	BranchURL     string   `json:"branchURL"`
+	BranchName    string   `json:"branchName"`
 	CommitMessage string   `json:"message"`
 	Metadata      []string `json:"metadata"`
 }
 
 var (
-	myURL      = "https://chromium.googlesource.com/chromiumos/platform/tast-tests/"
-	numCommits = 10
+	myURL      = flag.String("repoURL", "https://chromium.googlesource.com/chromiumos/platform/tast-tests/", "Repository URL to obtain the commits from")
+	numCommits = flag.Int("numberCommits", 10, "Number of commits to be obtained")
+	branchName = flag.String("branchName", "main", "Name of the branch name on the first page to start the commitzer process")
 )
 
 func main() {
 	args := os.Args[1:]
-	fmt.Println(args)
+	fmt.Println("Args are ", args)
 	err := run(10 * time.Second)
 	if err != nil {
 		log.Fatal(err)
@@ -65,23 +68,16 @@ func run(timeout time.Duration) error {
 	c := cdp.NewClient(conn)
 
 	domLoadTimeout := 50 * time.Second
-	err = navigate(ctx, c.Page, myURL, domLoadTimeout)
+	err = navigate(ctx, c.Page, *myURL, domLoadTimeout)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Navigated to: %s\n", myURL)
+	fmt.Printf("Navigated to: %s\n", *myURL)
 
 	/*
-		Get `main` branch URL and navigate to it. (Assuming stable JsPATH)
+		Get branch URL of the `branchName` passed ar Command-line argument and navigate to it.
 	*/
 	// Parse information from the document by evaluating JavaScript.
-	expression_branch_url := `
-		new Promise((resolve, reject) => {
-			setTimeout(() => {
-				const branch = document.querySelector("body > div > div > div.RepoShortlog > div.RepoShortlog-refs > div > ul > li:nth-child(1) > a").href;
-				resolve({branch});
-			}, 500);
-		});`
 
 	expression_commit_msg := `
 	new Promise((resolve, reject) => {
@@ -101,18 +97,13 @@ func run(timeout time.Duration) error {
 			resolve({metadata});
 		}, 500);
 	});`
+	var info DocumentInfo
 
-	// Document Main branch URL
-	evalArgs_branch_URL := runtime.NewEvaluateArgs(expression_branch_url).SetAwaitPromise(true).SetReturnByValue(true)
-	eval_branch_URL, err := c.Runtime.Evaluate(ctx, evalArgs_branch_URL)
+	url, err := getBranchURL(ctx, c, *branchName)
 	if err != nil {
 		return err
 	}
-	var info DocumentInfo
-	if err = json.Unmarshal(eval_branch_URL.Result.Value, &info); err != nil {
-		return err
-	}
-	// fmt.Printf("\nDocument Main branch URL : %q\n", info.BranchURL)
+	info.BranchURL = url
 
 	// Navigate to main branch
 	err = navigate(ctx, c.Page, info.BranchURL, domLoadTimeout)
@@ -122,7 +113,7 @@ func run(timeout time.Duration) error {
 	fmt.Printf("\nNavigated to: %s\n", info.BranchURL)
 
 	commitIndex := 0
-	for commitIndex < numCommits {
+	for commitIndex < *numCommits {
 		commitMessage, details, err := commit_iterator(ctx, timeout, c, expression_commit_msg, expression_metadata)
 		select {
 		case <-ctx.Done():
@@ -154,6 +145,42 @@ func run(timeout time.Duration) error {
 	}
 
 	return nil
+}
+
+func getBranchURL(ctx context.Context, c *cdp.Client, requiredBranchName string) (string, error) {
+	var info DocumentInfo
+	childNodeIndex := 1
+
+	branchNotFound := true
+	for branchNotFound {
+		expression_branch_url := fmt.Sprintf(`new Promise((resolve, reject) => {
+			setTimeout(() => {
+				const branchName = document.querySelector("body > div > div > div.RepoShortlog > div.RepoShortlog-refs > div > ul > li:nth-child(%d)").innerText;
+				const branchURL = document.querySelector("body > div > div > div.RepoShortlog > div.RepoShortlog-refs > div > ul > li:nth-child(%d) > a").href;
+				resolve({branchName,branchURL});
+			}, 500);
+		});`, childNodeIndex, childNodeIndex)
+
+		evalArgs_branch_URL := runtime.NewEvaluateArgs(expression_branch_url).SetAwaitPromise(true).SetReturnByValue(true)
+		eval_branch_URL, err := c.Runtime.Evaluate(ctx, evalArgs_branch_URL)
+		if err != nil {
+			return info.BranchURL, err
+		}
+
+		if err = json.Unmarshal(eval_branch_URL.Result.Value, &info); err != nil {
+			return info.BranchURL, err
+		}
+
+		if info.BranchName == requiredBranchName {
+			branchNotFound = false
+		}
+		childNodeIndex += 1
+	}
+
+	fmt.Printf("\nNavigated to branch branch with NAME : %q\n", info.BranchName)
+
+	return info.BranchURL, nil
+
 }
 
 // navigate to the URL and wait for DOMContentEventFired. An error is

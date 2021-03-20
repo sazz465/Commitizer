@@ -1,0 +1,10 @@
+Factor out GBB flags check logic into firmware checkers.
+
+BUG=b:166162128
+TEST=tast run &lt;DUT&gt; firmware.GBBFlags
+
+Change-Id: <a href="https://chromium-review.googlesource.com/#/q/Ie67e21def31f2f8d0d97eb0321cf692384f3320e">Ie67e21def31f2f8d0d97eb0321cf692384f3320e</a>
+Reviewed-on: <a href="https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2600221">https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2600221</a>
+Commit-Queue: Andrew Luo &lt;aluo@chromium.org&gt;
+Tested-by: Andrew Luo &lt;aluo@chromium.org&gt;
+Reviewed-by: Greg Edelston &lt;gredelston@google.com&gt;
