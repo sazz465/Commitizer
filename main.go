@@ -33,7 +33,7 @@ var (
 )
 
 func main() {
-	args := os.Args
+	args := os.Args[1:]
 	fmt.Println(args)
 	err := run(10 * time.Second)
 	if err != nil {
