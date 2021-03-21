@@ -8,6 +8,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
+	"sync"
 	"time"
 
 	"github.com/mafredri/cdp"
@@ -35,14 +37,14 @@ var (
 	myURL      = flag.String("repoURL", "https://chromium.googlesource.com/chromiumos/platform/tast-tests/", "Repository URL to obtain the commits from")
 	numCommits = flag.Int("numberCommits", 10, "Number of commits to be obtained")
 	branchName = flag.String("branchName", "main", "Name of the branch name on the first page to start the commitzer process")
-	timeout    = flag.Int("timeout", 15, "Sets the context timeout value")
-	path       = flag.String("path", "commits", "Path to store the commit files")
+	timeout    = flag.Int("timeout", 30, "Sets the context timeout value")
+	path       = flag.String("path", "commits/", "Path to store the commit files")
+	baseDir    = "commits/" // default base directory for string commit files
 )
 
 func main() {
 	flag.Parse()
 
-	baseDir := "commits/"
 	dirinfo, err := os.Stat(baseDir)
 	if err != nil || !dirinfo.IsDir() {
 		log.Println(err)
@@ -133,6 +135,8 @@ func run(timeout time.Duration, relativeFilePath string) error {
 	fmt.Printf("\nNavigated to: %s\n", info.BranchURL)
 
 	commitIndex := 0
+	var wg sync.WaitGroup
+	wg.Add(*numCommits)
 	for commitIndex < *numCommits {
 		commitMessage, details, err := commit_iterator(ctx, timeout, c, expression_commit_msg, expression_metadata)
 		select {
@@ -146,10 +150,17 @@ func run(timeout time.Duration, relativeFilePath string) error {
 			return err
 		}
 
-		go make_commit_file(commitMessage, details.Hash, relativeFilePath)
-		if err != nil {
-			return err
-		}
+		go func(commitIndex int) {
+			err = make_commit_file(commitMessage, details.Hash, relativeFilePath, commitIndex)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}(commitIndex)
+
+		// err = make_commit_file(commitMessage, details.Hash, relativeFilePath)
+		// if err != nil {
+		// 	return err
+		// }
 
 		err = navigate(ctx, c.Page, details.NextCommitHref, domLoadTimeout)
 		if err != nil {
@@ -161,7 +172,6 @@ func run(timeout time.Duration, relativeFilePath string) error {
 		fmt.Printf("Commit %d\n", commitIndex)
 
 	}
-
 	return nil
 }
 
@@ -204,6 +214,7 @@ func getBranchURL(ctx context.Context, c *cdp.Client, requiredBranchName string)
 // navigate to the URL and wait for DOMContentEventFired. An error is
 // returned if timeout happens before DOMContentEventFired.
 func navigate(ctx context.Context, pageClient cdp.Page, url string, timeout time.Duration) error {
+	// fmt.Printf("\nInside navigate")
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithTimeout(ctx, timeout)
 	defer cancel()
@@ -229,9 +240,10 @@ func navigate(ctx context.Context, pageClient cdp.Page, url string, timeout time
 	_, err = domContentEventFired.Recv()
 	return err
 }
-func make_commit_file(commit_message string, commit_hash string, fpath string) error {
+func make_commit_file(commit_message string, commit_hash string, fpath string, commitIndex int) error {
 
-	path := fpath + "/" + commit_hash + ".txt"
+	// fmt.Printf("\nstarted Commit file for commit %d", commitIndex+1)
+	path := fpath + "/" + "commit" + strconv.Itoa(commitIndex+1) + "_" + commit_hash + ".txt"
 	f, err := os.Create(path)
 	if err != nil {
 		log.Fatal(err)
@@ -241,10 +253,12 @@ func make_commit_file(commit_message string, commit_hash string, fpath string) e
 	if err2 != nil {
 		log.Fatal(err2)
 	}
+	// fmt.Printf("\nFinished file for commit %d", commitIndex+1)
 	return err
 }
 
 func commit_iterator(ctx context.Context, timeout time.Duration, c *cdp.Client, expression_commit_msg string, expression_metadata string) (string, CommitDetails, error) {
+	// fmt.Printf("\ncommit iterator")
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithTimeout(ctx, timeout)
 	defer cancel()
@@ -271,15 +285,6 @@ func commit_iterator(ctx context.Context, timeout time.Duration, c *cdp.Client, 
 	if err = json.Unmarshal(eval_metadata.Result.Value, &info); err != nil {
 		return info.CommitMessage, details, err
 	}
-	// fmt.Printf("\nMetadata Table: %q\n", info.Metadata)
-
 	details = CommitDetails{Hash: info.Metadata[0][:8], Author: info.Metadata[1], NextCommitHref: info.Metadata[2]}
-
-	// fmt.Printf("\nMetadata Table: %q\n", details)
-
 	return info.CommitMessage, details, nil
 }
-
-// func get_commit(ctx context.Context, )  {
-
-// }
