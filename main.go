@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/mafredri/cdp"
@@ -29,22 +30,41 @@ type DocumentInfo struct {
 	Metadata      []string `json:"metadata"`
 }
 
+// Command line variables
 var (
 	myURL      = flag.String("repoURL", "https://chromium.googlesource.com/chromiumos/platform/tast-tests/", "Repository URL to obtain the commits from")
 	numCommits = flag.Int("numberCommits", 10, "Number of commits to be obtained")
 	branchName = flag.String("branchName", "main", "Name of the branch name on the first page to start the commitzer process")
 	timeout    = flag.Int("timeout", 15, "Sets the context timeout value")
+	path       = flag.String("path", "commits", "Path to store the commit files")
 )
 
 func main() {
 	flag.Parse()
-	err := run(time.Duration(*timeout * int(time.Second)))
+
+	baseDir := "commits/"
+	dirinfo, err := os.Stat(baseDir)
+	if err != nil || !dirinfo.IsDir() {
+		log.Println(err)
+		os.MkdirAll(baseDir, 0755)
+		fmt.Printf("\nDirectory %s is created\n", baseDir)
+
+	}
+	relfpath, err := filepath.Rel(baseDir, *path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if relfpath == "." {
+		relfpath = baseDir
+	}
+
+	err = run(time.Duration(*timeout*int(time.Second)), relfpath)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func run(timeout time.Duration) error {
+func run(timeout time.Duration, relativeFilePath string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
@@ -67,12 +87,12 @@ func run(timeout time.Duration) error {
 
 	c := cdp.NewClient(conn)
 
-	domLoadTimeout := 50 * time.Second
+	domLoadTimeout := 5 * time.Second
 	err = navigate(ctx, c.Page, *myURL, domLoadTimeout)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Navigated to: %s\n", *myURL)
+	// fmt.Printf("Navigated to: %s\n", *myURL)
 
 	/*
 		Get branch URL of the `branchName` passed ar Command-line argument and navigate to it.
@@ -126,12 +146,10 @@ func run(timeout time.Duration) error {
 			return err
 		}
 
-		err = make_commit_file(commitMessage, details.Hash)
+		go make_commit_file(commitMessage, details.Hash, relativeFilePath)
 		if err != nil {
 			return err
 		}
-
-		// go make_commit_file(commitMessage, details.Hash)
 
 		err = navigate(ctx, c.Page, details.NextCommitHref, domLoadTimeout)
 		if err != nil {
@@ -140,7 +158,7 @@ func run(timeout time.Duration) error {
 		fmt.Printf("\nNavigated to: %s\n", details.NextCommitHref)
 
 		commitIndex += 1
-		fmt.Println(commitIndex)
+		fmt.Printf("Commit %d\n", commitIndex)
 
 	}
 
@@ -211,8 +229,10 @@ func navigate(ctx context.Context, pageClient cdp.Page, url string, timeout time
 	_, err = domContentEventFired.Recv()
 	return err
 }
-func make_commit_file(commit_message string, commit_hash string) error {
-	f, err := os.Create(commit_hash + ".txt")
+func make_commit_file(commit_message string, commit_hash string, fpath string) error {
+
+	path := fpath + "/" + commit_hash + ".txt"
+	f, err := os.Create(path)
 	if err != nil {
 		log.Fatal(err)
 	}
