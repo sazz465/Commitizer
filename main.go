@@ -34,12 +34,13 @@ type DocumentInfo struct {
 
 // Command line variables
 var (
-	myURL      = flag.String("repoURL", "https://chromium.googlesource.com/chromiumos/platform/tast-tests/", "Repository URL to obtain the commits from")
-	numCommits = flag.Int("numberCommits", 10, "Number of commits to be obtained")
-	branchName = flag.String("branchName", "main", "Name of the branch name on the first page to start the commitzer process")
-	timeout    = flag.Int("timeout", 30, "Sets the context timeout value")
-	path       = flag.String("path", "commits/", "Path to store the commit files")
-	baseDir    = "commits/" // default base directory for string commit files
+	myURL            = flag.String("repoURL", "https://chromium.googlesource.com/chromiumos/platform/tast-tests/", "Repository URL to obtain the commits from")
+	numCommits       = flag.Int("numCommits", 10, "Number of commits to be obtained")
+	branchName       = flag.String("branchName", "main", "Name of the branch name on the first page to start the commitzer process")
+	timeout          = flag.Int("timeout", 30, "Sets the context timeout value")
+	path             = flag.String("path", "commits/", "Path to store the commit files")
+	baseDir          = "commits/" // default base directory for string commit files
+	numAuthorCreated = make(map[string]int)
 )
 
 func main() {
@@ -60,13 +61,19 @@ func main() {
 		relfpath = baseDir
 	}
 
-	err = run(time.Duration(*timeout*int(time.Second)), relfpath)
+	err = run(time.Duration(*timeout*int(time.Second)), relfpath, numAuthorCreated)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	parser(relfpath)
+	for author := range numAuthorReviewed {
+		fmt.Printf("\nAuthor %s reviwed %d commits and created %d  \n", author, numAuthorReviewed[author], numAuthorCreated[author])
+	}
+
 }
 
-func run(timeout time.Duration, relativeFilePath string) error {
+func run(timeout time.Duration, relativeFilePath string, numAuthorCreated map[string]int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
@@ -104,7 +111,7 @@ func run(timeout time.Duration, relativeFilePath string) error {
 	expression_commit_msg := `
 	new Promise((resolve, reject) => {
 		setTimeout(() => {
-			const message = document.querySelector("body > div > div > pre").innerHTML;
+			const message = document.querySelector("body > div > div > pre").innerText;
 			resolve({message});
 		}, 500);
 	});`
@@ -113,7 +120,7 @@ func run(timeout time.Duration, relativeFilePath string) error {
 	new Promise((resolve, reject) => {
 		setTimeout(() => {
 			const commitHash = document.querySelector("body > div > div > div.u-monospace.Metadata > table > tbody > tr:nth-child(1) > td:nth-child(2)").innerHTML;
-			const author = document.querySelector("body > div > div > div.u-monospace.Metadata > table > tbody > tr:nth-child(2) > td:nth-child(2)").innerHTML;
+			const author = document.querySelector("body > div > div > div.u-monospace.Metadata > table > tbody > tr:nth-child(2) > td:nth-child(2)").innerText;
 			const nextCommitHref = document.querySelector("body > div > div > div.u-monospace.Metadata > table > tbody > tr:nth-child(5) > td:nth-child(2) > a").href;
 			const metadata = [commitHash,author,nextCommitHref]
 			resolve({metadata});
@@ -138,7 +145,7 @@ func run(timeout time.Duration, relativeFilePath string) error {
 	var wg sync.WaitGroup
 	wg.Add(*numCommits)
 	for commitIndex < *numCommits {
-		commitMessage, details, err := commit_iterator(ctx, timeout, c, expression_commit_msg, expression_metadata)
+		commitMessage, details, err := commit_iterator(ctx, timeout, c, expression_commit_msg, expression_metadata, numAuthorCreated)
 		select {
 		case <-ctx.Done():
 			log.Println("\nInfo:Please consider increasing timeout")
@@ -157,11 +164,6 @@ func run(timeout time.Duration, relativeFilePath string) error {
 			}
 		}(commitIndex)
 
-		// err = make_commit_file(commitMessage, details.Hash, relativeFilePath)
-		// if err != nil {
-		// 	return err
-		// }
-
 		err = navigate(ctx, c.Page, details.NextCommitHref, domLoadTimeout)
 		if err != nil {
 			return err
@@ -172,6 +174,9 @@ func run(timeout time.Duration, relativeFilePath string) error {
 		fmt.Printf("Commit %d\n", commitIndex)
 
 	}
+	// for author := range numAuthorCreated {
+	// 	fmt.Printf("\nAuthor %s created %d commits \n", author, numAuthorCreated[author])
+	// }
 	return nil
 }
 
@@ -257,7 +262,7 @@ func make_commit_file(commit_message string, commit_hash string, fpath string, c
 	return err
 }
 
-func commit_iterator(ctx context.Context, timeout time.Duration, c *cdp.Client, expression_commit_msg string, expression_metadata string) (string, CommitDetails, error) {
+func commit_iterator(ctx context.Context, timeout time.Duration, c *cdp.Client, expression_commit_msg string, expression_metadata string, numAuthorCreated map[string]int) (string, CommitDetails, error) {
 	// fmt.Printf("\ncommit iterator")
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithTimeout(ctx, timeout)
@@ -286,5 +291,7 @@ func commit_iterator(ctx context.Context, timeout time.Duration, c *cdp.Client, 
 		return info.CommitMessage, details, err
 	}
 	details = CommitDetails{Hash: info.Metadata[0][:8], Author: info.Metadata[1], NextCommitHref: info.Metadata[2]}
+	numAuthorCreated[details.Author]++
+
 	return info.CommitMessage, details, nil
 }
