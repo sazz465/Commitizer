@@ -38,7 +38,8 @@ var (
 	numCommits       = flag.Int("numCommits", 10, "Number of commits to be obtained")
 	branchName       = flag.String("branchName", "main", "Name of the branch name on the first page to start the commitzer process")
 	timeout          = flag.Int("timeout", 30, "Sets the context timeout value")
-	path             = flag.String("path", "commits/", "Path to store the commit files")
+	pathCommits      = flag.String("pathCommits", "commits/", "Path to store the commit files")
+	pathCSV          = flag.String("pathCSV", "/", "Path to store the CSV filex")
 	baseDir          = "commits/" // default base directory for string commit files
 	numAuthorCreated = make(map[string]int)
 )
@@ -53,7 +54,7 @@ func main() {
 		fmt.Printf("\nDirectory %s is created\n", baseDir)
 
 	}
-	relfpath, err := filepath.Rel(baseDir, *path)
+	relfpath, err := filepath.Rel(baseDir, *pathCommits)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -65,10 +66,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	parser(relfpath)
-	for author := range numAuthorReviewed {
-		fmt.Printf("\nAuthor %s reviwed %d commits and created %d  \n", author, numAuthorReviewed[author], numAuthorCreated[author])
+	err = parser(relfpath, *pathCSV)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 }

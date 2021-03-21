@@ -2,10 +2,12 @@ package main
 
 import (
 	"bufio"
+	"encoding/csv"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -13,23 +15,21 @@ var (
 	numAuthorReviewed = make(map[string]int)
 )
 
-func parser(relativeFilePath string) {
+func parser(relativeFilePath string, pathCSV string) error {
 	fmt.Println("INSIDE PARSER")
 	files, err := ioutil.ReadDir(relativeFilePath)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	for _, f := range files {
-		fmt.Println(f.Name())
 		file, err := os.Open(relativeFilePath + f.Name())
 
 		if err != nil {
-			log.Fatalf("failed to open")
+			return err
 
 		}
 		scanner := bufio.NewScanner(file)
 		scanner.Split(bufio.ScanLines)
-		// var text []string
 
 		for scanner.Scan() {
 			ln := strings.TrimSpace(scanner.Text())
@@ -40,8 +40,47 @@ func parser(relativeFilePath string) {
 		file.Close()
 	}
 
-	// for author := range numAuthorReviewed {
-	// 	fmt.Printf("\nAuthor %s reviwed %d commits \n", author, numAuthorReviewed[author])
-	// }
+	var csvData [][]string
+	var authorList []string
 
+	for author := range numAuthorReviewed {
+		authorList = append(authorList, author)
+		csvData = append(csvData, []string{author, strconv.Itoa(numAuthorCreated[author]), strconv.Itoa(numAuthorReviewed[author])})
+		// fmt.Printf("\nAuthor %s reviwed %d commits and created %d  \n", author, numAuthorReviewed[author], numAuthorCreated[author])
+	}
+
+	for author := range numAuthorCreated {
+		if val, ok := numAuthorReviewed[author]; !ok {
+			authorList = append(authorList, strconv.Itoa(val))
+			csvData = append(csvData, []string{author, strconv.Itoa(numAuthorCreated[author]), strconv.Itoa(numAuthorReviewed[author])})
+		}
+		// fmt.Printf("\nAuthor %s reviwed %d commits and created %d  \n", author, numAuthorReviewed[author], numAuthorCreated[author])
+	}
+
+	err = make_csv(relativeFilePath, numAuthorCreated, numAuthorReviewed, csvData)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return nil
+}
+
+func make_csv(relativeFilePath string, numAuthorCreated map[string]int, numAuthorReviewed map[string]int, csvData [][]string) error {
+
+	file, err := os.Create("result.csv")
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
+
+	for _, value := range csvData {
+		err = writer.Write(value)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
