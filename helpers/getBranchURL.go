@@ -9,13 +9,6 @@ import (
 	"github.com/mafredri/cdp/protocol/runtime"
 )
 
-type DocumentInfo struct {
-	BranchURL     string   `json:"branchURL"`
-	BranchName    string   `json:"branchName"`
-	CommitMessage string   `json:"message"`
-	Metadata      []string `json:"metadata"`
-}
-
 func getBranchURL(ctx context.Context, c *cdp.Client, requiredBranchName string) (string, error) {
 	var info DocumentInfo
 	childNodeIndex := 1
