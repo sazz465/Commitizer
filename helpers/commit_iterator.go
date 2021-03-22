@@ -14,6 +14,12 @@ type CommitDetails struct {
 	Author         string `json:"author"`
 	NextCommitHref string `json:"nexthash"`
 }
+type DocumentInfo struct {
+	BranchURL     string   `json:"branchURL"`
+	BranchName    string   `json:"branchName"`
+	CommitMessage string   `json:"message"`
+	Metadata      []string `json:"metadata"`
+}
 
 func commit_iterator(ctx context.Context, timeout time.Duration, c *cdp.Client, expression_commit_msg string, expression_metadata string, numAuthorCreated map[string]int) (string, CommitDetails, error) {
 	// fmt.Printf("\ncommit iterator")

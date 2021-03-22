@@ -34,7 +34,7 @@ type DocumentInfo struct {
 
 // Command line variables
 var (
-	baseDir           = "commits-data/" // default base directory for string commit files
+	baseDir           = "sample/commits-data/" // default base directory for string commit files
 	repoURL           = flag.String("repoURL", "https://chromium.googlesource.com/chromiumos/platform/tast-tests/", "Repository URL to obtain the commits from")
 	numCommits        = flag.Int("numCommits", 10, "Number of commits to be obtained")
 	branchName        = flag.String("branchName", "main", "Name of the branch name on the first page to start the commitzer process")
