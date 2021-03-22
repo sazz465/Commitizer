@@ -40,18 +40,18 @@ func parser(relativeFilePath string, pathCSV string) error {
 		file.Close()
 	}
 
-	var csvData [][]string
-	var authorList []string
+	csvData := [][]string{{"Author", "Created", "Reviewed"}}
+	// var authorList []string
 
 	for author := range numAuthorReviewed {
-		authorList = append(authorList, author)
+		// authorList = append(authorList, author)
 		csvData = append(csvData, []string{author, strconv.Itoa(numAuthorCreated[author]), strconv.Itoa(numAuthorReviewed[author])})
 		// fmt.Printf("\nAuthor %s reviwed %d commits and created %d  \n", author, numAuthorReviewed[author], numAuthorCreated[author])
 	}
 
 	for author := range numAuthorCreated {
-		if val, ok := numAuthorReviewed[author]; !ok {
-			authorList = append(authorList, strconv.Itoa(val))
+		if _, ok := numAuthorReviewed[author]; !ok {
+			// authorList = append(authorList, strconv.Itoa(val))
 			csvData = append(csvData, []string{author, strconv.Itoa(numAuthorCreated[author]), strconv.Itoa(numAuthorReviewed[author])})
 		}
 		// fmt.Printf("\nAuthor %s reviwed %d commits and created %d  \n", author, numAuthorReviewed[author], numAuthorCreated[author])
