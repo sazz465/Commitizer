@@ -34,14 +34,15 @@ type DocumentInfo struct {
 
 // Command line variables
 var (
-	myURL            = flag.String("repoURL", "https://chromium.googlesource.com/chromiumos/platform/tast-tests/", "Repository URL to obtain the commits from")
-	numCommits       = flag.Int("numCommits", 10, "Number of commits to be obtained")
-	branchName       = flag.String("branchName", "main", "Name of the branch name on the first page to start the commitzer process")
-	timeout          = flag.Int("timeout", 30, "Sets the context timeout value")
-	pathCommits      = flag.String("pathCommits", "commits/", "Path to store the commit files")
-	pathCSV          = flag.String("pathCSV", "/", "Path to store the CSV filex")
-	baseDir          = "commits/" // default base directory for string commit files
-	numAuthorCreated = make(map[string]int)
+	baseDir           = "commits-data/" // default base directory for string commit files
+	repoURL           = flag.String("repoURL", "https://chromium.googlesource.com/chromiumos/platform/tast-tests/", "Repository URL to obtain the commits from")
+	numCommits        = flag.Int("numCommits", 10, "Number of commits to be obtained")
+	branchName        = flag.String("branchName", "main", "Name of the branch name on the first page to start the commitzer process")
+	timeout           = flag.Int("timeout", 30, "Sets the context timeout value")
+	pathCommits       = flag.String("pathCommits", baseDir, "Path to store the commit files")
+	pathCSV           = flag.String("pathCSV", baseDir, "Path to store the CSV file")
+	numAuthorCreated  = make(map[string]int) // map that stores number of commits created by each author
+	numAuthorReviewed = make(map[string]int) // map that stores number of commits reviewed by each author
 )
 
 func main() {
@@ -97,7 +98,7 @@ func run(timeout time.Duration, relativeFilePath string, numAuthorCreated map[st
 	c := cdp.NewClient(conn)
 
 	domLoadTimeout := 5 * time.Second
-	err = navigate(ctx, c.Page, *myURL, domLoadTimeout)
+	err = navigate(ctx, c.Page, *repoURL, domLoadTimeout)
 	if err != nil {
 		return err
 	}
@@ -245,6 +246,7 @@ func navigate(ctx context.Context, pageClient cdp.Page, url string, timeout time
 	_, err = domContentEventFired.Recv()
 	return err
 }
+
 func make_commit_file(commit_message string, commit_hash string, fpath string, commitIndex int) error {
 
 	// fmt.Printf("\nstarted Commit file for commit %d", commitIndex+1)

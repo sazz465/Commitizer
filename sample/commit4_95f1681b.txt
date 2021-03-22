@@ -1,0 +1,19 @@
+camera: Check "cros-camera" status when fails to stream
+
+When seeing an error of "Tast.isVideoActive() === %t" failure in CCA
+tests, it is quite common that we will try to find ps.txt in the log to
+understand if CrOS camera service is still running or it is somehow
+stopped due to some platform level issues.
+
+This CL adds a check while tests fail to stream so that we can figure
+out if it is caused by platform level issue at the first glance.
+
+BUG=b:168894537
+TEST=tast run [DUT] camera.CCAUISmoke.real
+
+Change-Id: If186075346a4736d064d1449bc287d9f00665b0f
+Reviewed-on: https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2775401
+Tested-by: Wei Lee <wtlee@chromium.org>
+Auto-Submit: Wei Lee <wtlee@chromium.org>
+Commit-Queue: Judy Wu <jinrongwu@google.com>
+Reviewed-by: Judy Wu <jinrongwu@google.com>

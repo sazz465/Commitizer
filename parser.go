@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"encoding/csv"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -11,12 +10,7 @@ import (
 	"strings"
 )
 
-var (
-	numAuthorReviewed = make(map[string]int)
-)
-
 func parser(relativeFilePath string, pathCSV string) error {
-	fmt.Println("INSIDE PARSER")
 	files, err := ioutil.ReadDir(relativeFilePath)
 	if err != nil {
 		return err
@@ -66,7 +60,7 @@ func parser(relativeFilePath string, pathCSV string) error {
 
 func make_csv(relativeFilePath string, numAuthorCreated map[string]int, numAuthorReviewed map[string]int, csvData [][]string) error {
 
-	file, err := os.Create("result.csv")
+	file, err := os.Create(relativeFilePath + "/" + "contributions.csv")
 	if err != nil {
 		return err
 	}
