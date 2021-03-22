@@ -9,6 +9,9 @@ import (
 	"github.com/mafredri/cdp/protocol/runtime"
 )
 
+/*
+	Get branch URL of the `branchName` passed ar Command-line argument and navigate to it.
+*/
 func getBranchURL(ctx context.Context, c *cdp.Client, requiredBranchName string) (string, error) {
 	var info DocumentInfo
 	childNodeIndex := 1

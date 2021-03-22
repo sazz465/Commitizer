@@ -1,0 +1,14 @@
+wifi.RoamAPGone: Fix a flake due to teardown ordering.
+
+Fix a bug in the teardown ordering to avoid "Failed to disconnect WiFi"
+flake.
+
+BUG=None
+TEST=tast run wifi.RoamAPGone*
+
+Change-Id: I48b0a146f897c2dabff0687062d97619d99d4203
+Reviewed-on: https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2763596
+Tested-by: Yen-lin Lai <yenlinlai@chromium.org>
+Reviewed-by: Shuo-Peng Liao <deanliao@chromium.org>
+Reviewed-by: Arowa Suliman <arowa@chromium.org>
+Commit-Queue: Shuo-Peng Liao <deanliao@chromium.org>

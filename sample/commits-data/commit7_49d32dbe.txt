@@ -1,0 +1,15 @@
+tast-tests: deprecate chrome/vkb
+
+1. Fully migrate chrome/vkb to chrome/uiauto/vkb.
+2. Update arc++ tests to use uiauto/vkb.
+3. Fix uiauto.Exists and uiauto.IsNodeFound.
+
+BUG=b:182408845
+TEST=arc.ChromeVirtualKeyboard*
+TEST=arc.SoftInputMode*
+
+Change-Id: I63b99c144721fc681c9a760261424fb724d355d9
+Reviewed-on: https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2772389
+Reviewed-by: Judy Wu <jinrongwu@google.com>
+Tested-by: Jun Sheng <shengjun@chromium.org>
+Commit-Queue: Jun Sheng <shengjun@chromium.org>

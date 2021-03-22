@@ -1,0 +1,14 @@
+policy: Add simple test for SystemTimezoneAutomaticDetection
+
+Add a simple test for SystemTimezoneAutomaticDetection by checking the
+state of the settings page.
+
+BUG=chromium:1190754
+TEST=tast run <ip> policy.SystemTimezoneAutomaticDetection
+
+Change-Id: I7b1376b44bd37cef190823b49668b9ac6d15fcaa
+Reviewed-on: https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2775944
+Commit-Queue: Victor-Gabriel Savu <vsavu@google.com>
+Tested-by: Victor-Gabriel Savu <vsavu@google.com>
+Reviewed-by: Kamil Szarek <kamilszarek@google.com>
+Reviewed-by: Gabor Zsolt Magda <gabormagda@google.com>

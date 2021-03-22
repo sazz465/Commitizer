@@ -1,0 +1,19 @@
+Tast: Run CheckIntelSARTable on Akemi
+
+Currently, Akemi is being skipped by the critical version of
+wifi.CheckIntelSARTable. The issue causing the test to fail on Akemi has
+been resolved, and Akemi is currently passing the informational version
+of the test, so make the critical version of the test run on Akemi
+again.
+
+BUG=b:172288894
+TEST=tast run ${DUT} wifi.CheckIntelSARTable
+passes on Akemi
+test run ${DUT} wifi.CheckIntelSARTable.informational
+skips on Akemi
+
+Change-Id: I2dac0ea4be38aa6e8d4bb570f37211aecc2d7dd6
+Reviewed-on: https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2774201
+Reviewed-by: Eric Caruso <ejcaruso@chromium.org>
+Tested-by: Kevin Lund <kglund@google.com>
+Commit-Queue: Kevin Lund <kglund@google.com>

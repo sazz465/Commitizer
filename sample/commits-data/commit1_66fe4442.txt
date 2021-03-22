@@ -1,0 +1,13 @@
+policy: Extend SystemTimezoneAutomaticDetection
+
+Extend SystemTimezoneAutomaticDetection to actually check the
+currently selected timezone detection mode.
+
+BUG=chromium:1190753
+TEST=tast run <ip> policy.SystemTimezoneAutomaticDetection
+
+Change-Id: I3d0e06352f332d45c9746daea22860b9e7732aa4
+Reviewed-on: https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2778253
+Commit-Queue: Victor-Gabriel Savu <vsavu@google.com>
+Tested-by: Victor-Gabriel Savu <vsavu@google.com>
+Reviewed-by: Gabor Zsolt Magda <gabormagda@google.com>

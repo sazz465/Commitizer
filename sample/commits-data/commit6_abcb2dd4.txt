@@ -1,0 +1,17 @@
+Tast: Skip all versions of wifi.CheckIntelSARTable on eve
+
+Eve has a special case SAR table configuration which makes it impossible
+to verify using this test. To prevent misleading signal and wasted lab
+resources, we skip all version of this test on eve.
+
+BUG=b:181055964
+TEST=tast run ${DUT} wifi.CheckIntelSARTable
+correctly skips on eve
+TEST=tast run ${DUT} wifi.CheckIntelSARTable.informational
+correctly skips on eve
+
+Change-Id: I124c882a710ed821cc758a61b63d13c19c874ac4
+Reviewed-on: https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2769299
+Tested-by: Kevin Lund <kglund@google.com>
+Commit-Queue: Kevin Lund <kglund@google.com>
+Reviewed-by: Eric Caruso <ejcaruso@chromium.org>
