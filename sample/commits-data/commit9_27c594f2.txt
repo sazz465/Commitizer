@@ -1,0 +1,19 @@
+(Nearby Share) Negative tests for Phone->CB contact visibility
+
+To fully verify contact visibility functionality, we need to check that
+the CrOS device is not discoverable by other devices when:
+- Visibility is set to 'No one'
+- Visibility is set to 'Some contacts' and the sender is not selected
+
+This test will ensure that no incoming share notification is detected
+within the time we allow receivers to detect an incoming share.
+
+BUG=chromium:1185940
+TEST=tast run <dut> nearbyshare.PhoneToCrosNotVisible.*
+
+Change-Id: I54672a5a59405af46c8a7957fa3b74163c7a5d8d
+Reviewed-on: https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2765835
+Tested-by: Kyle Shimabukuro <kyleshima@chromium.org>
+Reviewed-by: Po-Hsien Wang <pwang@chromium.org>
+Reviewed-by: David Haddock <dhaddock@chromium.org>
+Commit-Queue: Kyle Shimabukuro <kyleshima@chromium.org>

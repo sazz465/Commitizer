@@ -1,0 +1,22 @@
+tast-tests: arc: Fix arc.Clipboard.vm
+
+This CL fixes arc.Clipboard.vm for ARC R.
+
+* Click the activity before starting testing.
+  As ARC R uses the Wayland protocol for the clipboard, at least one
+  mouse event has to be sent to Android before testing Android-to-Chrome
+  clipboard.
+* Use WaitForText for waiting the observer, instead of testing.Poll
+* Move up the observer_view position. UIAutomator does not allow
+  interaction with an invisible element. observer_view could be placed
+  outside of the window if the text_view content was too long.
+
+BUG=b:154288462
+TEST=tast run rammus-r-dut arc.Clipboard.vm
+
+Change-Id: I5793eebfe65df2de1ea68638d9a005115d653b4e
+Reviewed-on: https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2716797
+Commit-Queue: Tetsui Ohkubo <tetsui@chromium.org>
+Tested-by: Tetsui Ohkubo <tetsui@chromium.org>
+Reviewed-by: Yuichiro Hanada <yhanada@chromium.org>
+Reviewed-by: Alexander Hartl <alexanderhartl@google.com>

@@ -1,0 +1,15 @@
+tast: Enable SELinuxProcessesARC for ARCVM
+
+(as informational test for now.)
+
+BUG=b:160208106
+TEST=tast run
+
+Change-Id: Ib061f297b720892d7700d77a41e3b310d6ed77fd
+Reviewed-on: https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2741879
+Auto-Submit: Satoshi Niwa <niwa@chromium.org>
+Tested-by: Satoshi Niwa <niwa@chromium.org>
+Commit-Queue: Satoshi Niwa <niwa@chromium.org>
+Reviewed-by: Qijiang Fan <fqj@google.com>
+Reviewed-by: Ricardo Quesada <ricardoq@chromium.org>
+Reviewed-by: Jorge Lucangeli Obes <jorgelo@chromium.org>
