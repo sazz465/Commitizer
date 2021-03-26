@@ -1,0 +1,14 @@
+replace local/testexec with common/testexec
+
+local/testexec is deprecated and replaced with common/testexec.
+
+BUG=chromium:1119252
+TEST=fast_build.sh -T
+TEST=tast run example.Pass arc.Boot
+TEST=no new warnings
+
+Change-Id: I5879e708fd2f154db53eedbee0b3611f77c10995
+Reviewed-on: https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2781088
+Tested-by: Keigo Oka <oka@chromium.org>
+Commit-Queue: Keigo Oka <oka@chromium.org>
+Reviewed-by: Shuhei Takahashi <nya@chromium.org>

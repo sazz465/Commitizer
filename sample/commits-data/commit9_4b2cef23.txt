@@ -1,0 +1,13 @@
+policy: Promote AccessibilityPolicies
+
+Promote AccessibilityPolicies to the Cq.
+
+BUG=chromium:1179710
+TEST=None
+
+Change-Id: I8d13690d126e0c2f944c1bf31b0e07d32bc74ec4
+Reviewed-on: https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2786788
+Tested-by: Victor-Gabriel Savu <vsavu@google.com>
+Auto-Submit: Victor-Gabriel Savu <vsavu@google.com>
+Commit-Queue: Greg Edelston <gredelston@google.com>
+Reviewed-by: Greg Edelston <gredelston@google.com>

@@ -1,0 +1,14 @@
+security.SandboxedServices: Add some one-off processes seen during tests.
+
+Tests are usually bad about cleaning up after themselves and routinely
+leak processes. Account for that.
+
+BUG=chromium:1191951
+TEST=Passes on betty-pi-arc.
+
+Exempt-From-Owner-Approval: Fix postsubmit.
+Change-Id: If35bf64626da0857ba71903b3a2273491e462527
+Reviewed-on: https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2787051
+Tested-by: Jorge Lucangeli Obes <jorgelo@chromium.org>
+Commit-Queue: Jorge Lucangeli Obes <jorgelo@chromium.org>
+Reviewed-by: Abhishek Pandit-Subedi <abhishekpandit@chromium.org>

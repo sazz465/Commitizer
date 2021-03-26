@@ -34,7 +34,7 @@ type DocumentInfo struct {
 
 // Command line variables
 var (
-	baseDir           = "commits-data/" // default base directory for string commit files
+	baseDir           = "sample/commits-data/" // default base directory for string commit files
 	repoURL           = flag.String("repoURL", "https://chromium.googlesource.com/chromiumos/platform/tast-tests/", "Repository URL to obtain the commits from")
 	numCommits        = flag.Int("numCommits", 10, "Number of commits to be obtained")
 	branchName        = flag.String("branchName", "main", "Name of the branch name on the first page to start the commitzer process")
@@ -55,6 +55,8 @@ func main() {
 		fmt.Printf("\nDirectory %s is created\n", baseDir)
 
 	}
+
+	// Finds relative file path of the provided path flag with baseDir
 	relfpath, err := filepath.Rel(baseDir, *pathCommits)
 	if err != nil {
 		log.Fatal(err)
@@ -63,10 +65,13 @@ func main() {
 		relfpath = baseDir
 	}
 
-	err = run(time.Duration(*timeout*int(time.Second)), relfpath, numAuthorCreated)
+	// Function that uses helper funcs in helpers/ and does all the work
+	err = commitizer_main(time.Duration(*timeout*int(time.Second)), relfpath, numAuthorCreated)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// Parses commit metadata and creates contributions.csv
 	err = parser(relfpath, *pathCSV)
 	if err != nil {
 		log.Fatal(err)
@@ -74,7 +79,7 @@ func main() {
 
 }
 
-func run(timeout time.Duration, relativeFilePath string, numAuthorCreated map[string]int) error {
+func commitizer_main(timeout time.Duration, relativeFilePath string, numAuthorCreated map[string]int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
@@ -103,10 +108,6 @@ func run(timeout time.Duration, relativeFilePath string, numAuthorCreated map[st
 		return err
 	}
 	// fmt.Printf("Navigated to: %s\n", *myURL)
-
-	/*
-		Get branch URL of the `branchName` passed ar Command-line argument and navigate to it.
-	*/
 	// Parse information from the document by evaluating JavaScript.
 
 	expression_commit_msg := `

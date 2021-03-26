@@ -34,7 +34,7 @@ func parser(relativeFilePath string, pathCSV string) error {
 		file.Close()
 	}
 
-	csvData := [][]string{{"Author", "Created", "Reviewed"}}
+	csvData := [][]string{{"Contributor", "Created", "Reviewed"}}
 	// var authorList []string
 
 	for author := range numAuthorReviewed {

@@ -1,0 +1,14 @@
+hwsec: remove the usage of cryptohome status
+
+We are deprecating the status command of cryptohome, chang it to the
+install attributes status call.
+
+BUG=b:175510138
+TEST=tast run $DUT hwsec.InstallAttributes
+
+Change-Id: If61c2f60e5643be503c9345415bd09f499165ab4
+Reviewed-on: https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2764149
+Tested-by: Yi Chou <yich@google.com>
+Reviewed-by: Greg Edelston <gredelston@google.com>
+Reviewed-by: John L Chen <zuan@chromium.org>
+Commit-Queue: Yi Chou <yich@google.com>
