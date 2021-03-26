@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-func make_commit_file(commit_message string, commit_hash string, fpath string, commitIndex int) error {
+func MakeCommitFile(commit_message string, commit_hash string, fpath string, commitIndex int) error {
 
 	// fmt.Printf("\nstarted Commit file for commit %d", commitIndex+1)
 	path := fpath + "/" + "commit" + strconv.Itoa(commitIndex+1) + "_" + commit_hash + ".txt"

@@ -21,7 +21,7 @@ type DocumentInfo struct {
 	Metadata      []string `json:"metadata"`
 }
 
-func commit_iterator(ctx context.Context, timeout time.Duration, c *cdp.Client, expression_commit_msg string, expression_metadata string, numAuthorCreated map[string]int) (string, CommitDetails, error) {
+func CommitIterator(ctx context.Context, timeout time.Duration, c *cdp.Client, expression_commit_msg string, expression_metadata string, numAuthorCreated map[string]int) (string, CommitDetails, error) {
 	// fmt.Printf("\ncommit iterator")
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithTimeout(ctx, timeout)

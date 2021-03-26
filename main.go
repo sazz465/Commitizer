@@ -2,20 +2,18 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"flag"
 	"fmt"
+
 	"log"
 	"os"
 	"path/filepath"
-	"strconv"
 	"sync"
 	"time"
 
+	"github.com/iraj465/commitizer/helpers"
 	"github.com/mafredri/cdp"
 	"github.com/mafredri/cdp/devtool"
-	"github.com/mafredri/cdp/protocol/page"
-	"github.com/mafredri/cdp/protocol/runtime"
 	"github.com/mafredri/cdp/rpcc"
 )
 
@@ -103,7 +101,7 @@ func commitizer_main(timeout time.Duration, relativeFilePath string, numAuthorCr
 	c := cdp.NewClient(conn)
 
 	domLoadTimeout := 5 * time.Second
-	err = navigate(ctx, c.Page, *repoURL, domLoadTimeout)
+	err = helpers.Navigate(ctx, c.Page, *repoURL, domLoadTimeout)
 	if err != nil {
 		return err
 	}
@@ -130,14 +128,14 @@ func commitizer_main(timeout time.Duration, relativeFilePath string, numAuthorCr
 	});`
 	var info DocumentInfo
 
-	url, err := getBranchURL(ctx, c, *branchName)
+	url, err := helpers.GetBranchURL(ctx, c, *branchName)
 	if err != nil {
 		return err
 	}
 	info.BranchURL = url
 
 	// Navigate to main branch
-	err = navigate(ctx, c.Page, info.BranchURL, domLoadTimeout)
+	err = helpers.Navigate(ctx, c.Page, info.BranchURL, domLoadTimeout)
 	if err != nil {
 		return err
 	}
@@ -147,7 +145,7 @@ func commitizer_main(timeout time.Duration, relativeFilePath string, numAuthorCr
 	var wg sync.WaitGroup
 	wg.Add(*numCommits)
 	for commitIndex < *numCommits {
-		commitMessage, details, err := commit_iterator(ctx, timeout, c, expression_commit_msg, expression_metadata, numAuthorCreated)
+		commitMessage, details, err := helpers.CommitIterator(ctx, timeout, c, expression_commit_msg, expression_metadata, numAuthorCreated)
 		select {
 		case <-ctx.Done():
 			log.Println("\nInfo:Please consider increasing timeout")
@@ -160,13 +158,13 @@ func commitizer_main(timeout time.Duration, relativeFilePath string, numAuthorCr
 		}
 
 		go func(commitIndex int) {
-			err = make_commit_file(commitMessage, details.Hash, relativeFilePath, commitIndex)
+			err = helpers.MakeCommitFile(commitMessage, details.Hash, relativeFilePath, commitIndex)
 			if err != nil {
 				log.Fatal(err)
 			}
 		}(commitIndex)
 
-		err = navigate(ctx, c.Page, details.NextCommitHref, domLoadTimeout)
+		err = helpers.Navigate(ctx, c.Page, details.NextCommitHref, domLoadTimeout)
 		if err != nil {
 			return err
 		}
@@ -176,125 +174,5 @@ func commitizer_main(timeout time.Duration, relativeFilePath string, numAuthorCr
 		fmt.Printf("Commit %d\n", commitIndex)
 
 	}
-	// for author := range numAuthorCreated {
-	// 	fmt.Printf("\nAuthor %s created %d commits \n", author, numAuthorCreated[author])
-	// }
 	return nil
-}
-
-func getBranchURL(ctx context.Context, c *cdp.Client, requiredBranchName string) (string, error) {
-	var info DocumentInfo
-	childNodeIndex := 1
-
-	branchNotFound := true
-	for branchNotFound {
-		expression_branch_url := fmt.Sprintf(`new Promise((resolve, reject) => {
-			setTimeout(() => {
-				const branchName = document.querySelector("body > div > div > div.RepoShortlog > div.RepoShortlog-refs > div > ul > li:nth-child(%d)").innerText;
-				const branchURL = document.querySelector("body > div > div > div.RepoShortlog > div.RepoShortlog-refs > div > ul > li:nth-child(%d) > a").href;
-				resolve({branchName,branchURL});
-			}, 500);
-		});`, childNodeIndex, childNodeIndex)
-
-		evalArgs_branch_URL := runtime.NewEvaluateArgs(expression_branch_url).SetAwaitPromise(true).SetReturnByValue(true)
-		eval_branch_URL, err := c.Runtime.Evaluate(ctx, evalArgs_branch_URL)
-		if err != nil {
-			return info.BranchURL, err
-		}
-
-		if err = json.Unmarshal(eval_branch_URL.Result.Value, &info); err != nil {
-			return info.BranchURL, err
-		}
-
-		if info.BranchName == requiredBranchName {
-			branchNotFound = false
-		}
-		childNodeIndex += 1
-	}
-
-	fmt.Printf("\nNavigated to branch branch with NAME : %q\n", info.BranchName)
-
-	return info.BranchURL, nil
-
-}
-
-// navigate to the URL and wait for DOMContentEventFired. An error is
-// returned if timeout happens before DOMContentEventFired.
-func navigate(ctx context.Context, pageClient cdp.Page, url string, timeout time.Duration) error {
-	// fmt.Printf("\nInside navigate")
-	var cancel context.CancelFunc
-	ctx, cancel = context.WithTimeout(ctx, timeout)
-	defer cancel()
-
-	// Make sure Page events are enabled.
-	err := pageClient.Enable(ctx)
-	if err != nil {
-		return err
-	}
-
-	// Open client for DOMContentEventFired to block until DOM has fully loaded.
-	domContentEventFired, err := pageClient.DOMContentEventFired(ctx)
-	if err != nil {
-		return err
-	}
-	defer domContentEventFired.Close()
-
-	_, err = pageClient.Navigate(ctx, page.NewNavigateArgs(url))
-	if err != nil {
-		return err
-	}
-
-	_, err = domContentEventFired.Recv()
-	return err
-}
-
-func make_commit_file(commit_message string, commit_hash string, fpath string, commitIndex int) error {
-
-	// fmt.Printf("\nstarted Commit file for commit %d", commitIndex+1)
-	path := fpath + "/" + "commit" + strconv.Itoa(commitIndex+1) + "_" + commit_hash + ".txt"
-	f, err := os.Create(path)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
-	_, err2 := f.WriteString(commit_message)
-	if err2 != nil {
-		log.Fatal(err2)
-	}
-	// fmt.Printf("\nFinished file for commit %d", commitIndex+1)
-	return err
-}
-
-func commit_iterator(ctx context.Context, timeout time.Duration, c *cdp.Client, expression_commit_msg string, expression_metadata string, numAuthorCreated map[string]int) (string, CommitDetails, error) {
-	// fmt.Printf("\ncommit iterator")
-	var cancel context.CancelFunc
-	ctx, cancel = context.WithTimeout(ctx, timeout)
-	defer cancel()
-
-	var info DocumentInfo
-	var details CommitDetails
-	// Document commit msg
-	evalArgs_commit_msg := runtime.NewEvaluateArgs(expression_commit_msg).SetAwaitPromise(true).SetReturnByValue(true)
-	eval_commit_msg, err := c.Runtime.Evaluate(ctx, evalArgs_commit_msg)
-	if err != nil {
-		return info.CommitMessage, details, err
-	}
-	if err = json.Unmarshal(eval_commit_msg.Result.Value, &info); err != nil {
-		return info.CommitMessage, details, err
-	}
-	// fmt.Printf("\nDocument commit msg is : %q\n", info.CommitMessage)
-
-	// Get metadata table
-	evalArgs_metadata := runtime.NewEvaluateArgs(expression_metadata).SetAwaitPromise(true).SetReturnByValue(true)
-	eval_metadata, err := c.Runtime.Evaluate(ctx, evalArgs_metadata)
-	if err != nil {
-		return info.CommitMessage, details, err
-	}
-	if err = json.Unmarshal(eval_metadata.Result.Value, &info); err != nil {
-		return info.CommitMessage, details, err
-	}
-	details = CommitDetails{Hash: info.Metadata[0][:8], Author: info.Metadata[1], NextCommitHref: info.Metadata[2]}
-	numAuthorCreated[details.Author]++
-
-	return info.CommitMessage, details, nil
 }
