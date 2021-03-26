@@ -1,0 +1,14 @@
+network.DefaultProfile{,Services}: skip on Winky
+
+This model is causing postsubmit issues due to flaky Ethernet.
+
+BUG=b:182293895
+TEST=`tast run ${HOST} network.DefaultProfile*`
+
+Exempt-From-Owner-Approval: fix CQ/postsubmit
+
+Change-Id: Ie799731070b15201ea67b681115d30c57a224ade
+Reviewed-on: https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2785714
+Tested-by: Brian Norris <briannorris@chromium.org>
+Reviewed-by: Matthew Wang <matthewmwang@chromium.org>
+Commit-Queue: Brian Norris <briannorris@chromium.org>

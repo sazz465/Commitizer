@@ -1,0 +1,29 @@
+Reland "tast: Add new test for companion dut for testing purpose."
+
+This is a reland of 671e00d54099054396cd2e9c2835f6fdc495052a
+
+Original change's description:
+> tast: Add new test for companion dut for testing purpose.
+>
+> Add new test for companion DUTs support. This test will not be run in CQ
+> or stainless for now.
+>
+> Passed unit test and manual.
+>
+> BUG=chromium:1185396
+> TEST=fast_build.sh -T; tast run -build=true -companiondut=cd1:octopus  -companiondut=dut2:127.0.0.1:2225 hana meta.CompanionDUTs
+>
+> Cq-Depend: chromium:2782242
+> Change-Id: I29388b57989be54940fdc70400433420bf87186a
+> Reviewed-on: https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2765829
+> Commit-Queue: Seewai Fu <seewaifu@google.com>
+> Tested-by: Seewai Fu <seewaifu@google.com>
+> Reviewed-by: Shuhei Takahashi <nya@chromium.org>
+> Reviewed-by: Tatsuhisa Yamaguchi <yamaguchi@chromium.org>
+
+Bug: chromium:1185396
+Change-Id: I8e121226a044515130a1ce2d085314baafdfc6df
+Reviewed-on: https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2786382
+Tested-by: Seewai Fu <seewaifu@google.com>
+Reviewed-by: Shuhei Takahashi <nya@chromium.org>
+Commit-Queue: Seewai Fu <seewaifu@google.com>
