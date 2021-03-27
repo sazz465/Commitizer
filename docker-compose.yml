@@ -1,0 +1,14 @@
+version: "2"
+services:
+  chrome:
+    image: zenika/alpine-chrome:80
+    command: [chromium-browser, "--headless", "--disable-gpu", "--no-sandbox", "--remote-debugging-address=0.0.0.0", "--remote-debugging-port=9222","https://www.chromestatus.com/"]
+    ports:
+      - "9222:9222"
+
+  # commitizer:
+  #   build: .
+  #   command: [./commitizer]
+    
+
+  
