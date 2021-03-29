@@ -16,6 +16,21 @@ cd $GOPATH/src/github.com/iraj465/commitizer
 git clone git@github.com:iraj465/Commitizer.git
 ```
 
+To run the commitizer, either use already built executable `commitizer` in root and call it with specified [Command line options](#command-line-options) if necessary.
+
+For example, running 
+```
+./commitizer -repoURL=https://chromium.googlesource.com/chromiumos/platform/tast-tests/ -branchName=main -numCommits=5
+```
+will get the last 5 commits of the [repo](https://chromium.googlesource.com/chromiumos/platform/tast-tests/) from the branch `main`
+
+If you wish to generate your own commitizer executable with name `exec-name`, run :
+
+```
+go build -o exec-name
+```
+The proceed with executable as outline above.
+
 ### Using Docker
 
 
