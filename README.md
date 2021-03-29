@@ -2,7 +2,6 @@
 
 Commitizer automates generating commits and contributions table from [TAST](https://chromium.googlesource.com/chromiumos/platform/tast/) repository, with specified branch and other flags. See [Command line options](#command-line-options)
 
----
 ## Getting started
 
 ### Cloning go project
@@ -16,7 +15,7 @@ cd $GOPATH/src/github.com/iraj465/commitizer
 git clone git@github.com:iraj465/Commitizer.git
 ```
 
-To run the commitizer, either use already built executable `commitizer` in root and call it with specified [Command line options](#command-line-options) if necessary.
+To run the commitizer, either use already built executable `commitizer` in root and call it with specified [command line options](#command-line-options) if necessary.
 
 For example, running 
 ```
@@ -33,7 +32,7 @@ The proceed with executable as outline above.
 
 ### Using Docker
 
-
+---
 ## Command line options
 
 
