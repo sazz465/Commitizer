@@ -14,6 +14,13 @@ cd $GOPATH/src/github.com/iraj465/commitizer
 
 git clone git@github.com:iraj465/Commitizer.git
 ```
+### Run headless chrome
+
+```bash
+docker container run -d -p 9222:9222 zenika/alpine-chrome --no-sandbox --remote-debugging-address=0.0.0.0 --remote-debugging-port=9222 https://www.chromestatus.com/
+
+```
+For headless chrome take a look [here](https://developers.google.com/web/updates/2017/04/headless-chrome)
 
 To run the commitizer, either use already built executable `commitizer` in root and call it with specified [command line options](#command-line-options) if necessary.
 
