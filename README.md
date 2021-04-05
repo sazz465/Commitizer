@@ -38,7 +38,10 @@ go build -o exec-name
 The proceed with executable as outline above.
 
 ### Using Docker
-
+```
+docker build -t commitizer .
+docker run -dp 4200:4200 getting-started sh
+```
 ---
 ## Command line options
 
