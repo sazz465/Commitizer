@@ -40,7 +40,7 @@ The proceed with executable as outline above.
 ### Using Docker
 ```
 docker build -t commitizer .
-docker run -dp 4200:4200 getting-started sh
+docker run -dp 4200:4200 commitizer sh
 ```
 ---
 ## Command line options
