@@ -1,0 +1,15 @@
+Add lacros_stable to lacros.Basic.
+
+This will make sure it runs only on confirmed stable configurations
+(i.e. not on VM where we have flakes currently).
+
+BUG=chromium:1194858,b:183969803
+TEST=tast list <dut> lacros.Basic lacros.Basic.unstable
+
+Cq-Depend: chromium:2797685, chromium:2796805
+Change-Id: Ic7bfcf470d90a0e047bdff5e6fb596bab7213685
+Reviewed-on: https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2797685
+Tested-by: Eliot Courtney <edcourtney@chromium.org>
+Reviewed-by: Hidehiko Abe <hidehiko@chromium.org>
+Reviewed-by: Yuke Liao <liaoyuke@chromium.org>
+Commit-Queue: Yuke Liao <liaoyuke@chromium.org>
