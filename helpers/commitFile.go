@@ -6,9 +6,9 @@ import (
 	"strconv"
 )
 
+// Makes commit file of the form `commit${commitIndex}_${commit_hash}.txt`
 func MakeCommitFile(commit_message string, commit_hash string, fpath string, commitIndex int) error {
 
-	// fmt.Printf("\nstarted Commit file for commit %d", commitIndex+1)
 	path := fpath + "/" + "commit" + strconv.Itoa(commitIndex+1) + "_" + commit_hash + ".txt"
 	f, err := os.Create(path)
 	if err != nil {
@@ -19,6 +19,5 @@ func MakeCommitFile(commit_message string, commit_hash string, fpath string, com
 	if err2 != nil {
 		log.Fatal(err2)
 	}
-	// fmt.Printf("\nFinished file for commit %d", commitIndex+1)
 	return err
 }

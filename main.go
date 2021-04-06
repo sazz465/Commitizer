@@ -50,13 +50,11 @@ func main() {
 	numAuthorCreated := make(map[string]int)  // map that stores number of commits created by each author
 	numAuthorReviewed := make(map[string]int) // map that stores number of commits reviewed by each author
 
-	// Function that uses helper funcs in helpers/ and does all the work
 	err = commitizer_main(time.Duration(*timeout*int(time.Second)), relfPath, numAuthorCreated)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Parses commit metadata and creates contributions.csv
 	err = helpers.Parser(relfPath, *pathCSV, numAuthorCreated, numAuthorReviewed)
 	if err != nil {
 		log.Fatal(err)
@@ -85,6 +83,8 @@ func getRelativePath(pathCommits string) (string, error) {
 	return relfpath, nil
 }
 
+// Function that uses helper funcs in helpers/ and does all the work
+// of getting numCommits number of commits and makes corresponding commit files
 func commitizer_main(timeout time.Duration, relativeFilePath string, numAuthorCreated map[string]int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
@@ -116,18 +116,10 @@ func commitizer_main(timeout time.Duration, relativeFilePath string, numAuthorCr
 
 	var info DocumentInfo
 
-	url, err := helpers.GetBranchURL(ctx, c, *branchName)
+	err = navigateToBranch(ctx, c, info, *branchName, domLoadTimeout)
 	if err != nil {
 		return err
 	}
-	info.BranchURL = url
-
-	// Navigate to main branch
-	err = helpers.Navigate(ctx, c.Page, info.BranchURL, domLoadTimeout)
-	if err != nil {
-		return err
-	}
-	fmt.Printf("\nNavigated to: %s\n", info.BranchURL)
 
 	// Loop for getting *numCommits number of commits by calling getCommitAndMakeFile and making commit file every time
 	commitIndex := 0
@@ -143,28 +135,28 @@ func commitizer_main(timeout time.Duration, relativeFilePath string, numAuthorCr
 	return nil
 }
 
+// Navigates to branch with name `branchName` (default branchName is "main")
+func navigateToBranch(ctx context.Context, c *cdp.Client, info DocumentInfo, branchName string, domLoadTimeout time.Duration) error {
+	url, err := helpers.GetBranchURL(ctx, c, branchName)
+	if err != nil {
+		return err
+	}
+	info.BranchURL = url
+
+	// Navigate to main branch
+	err = helpers.Navigate(ctx, c.Page, info.BranchURL, domLoadTimeout)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("\nNavigated to: %s\n", info.BranchURL)
+	return nil
+}
+
+// Gets the commit which is the commitIndex(^th) commit
+// and makes a commit file (.txt), and then navigates to the next commit page
 func getCommitAndMakeFile(ctx context.Context, c *cdp.Client, timeout time.Duration, info DocumentInfo, commitIndex int, numAuthorCreated map[string]int, relativeFilePath string, domLoadTimeout time.Duration) error {
-	// Parse information from the document by evaluating JavaScript from expressions below.
-	expression_commit_msg := `
-	new Promise((resolve, reject) => {
-		setTimeout(() => {
-			const message = document.querySelector("body > div > div > pre").innerText;
-			resolve({message});
-		}, 500);
-	});`
 
-	expression_metadata := `
-	new Promise((resolve, reject) => {
-		setTimeout(() => {
-			const commitHash = document.querySelector("body > div > div > div.u-monospace.Metadata > table > tbody > tr:nth-child(1) > td:nth-child(2)").innerHTML;
-			const author = document.querySelector("body > div > div > div.u-monospace.Metadata > table > tbody > tr:nth-child(2) > td:nth-child(2)").innerText;
-			const nextCommitHref = document.querySelector("body > div > div > div.u-monospace.Metadata > table > tbody > tr:nth-child(5) > td:nth-child(2) > a").href;
-			const metadata = [commitHash,author,nextCommitHref]
-			resolve({metadata});
-		}, 500);
-	});`
-
-	commitMessage, details, err := helpers.CommitIterator(ctx, timeout, c, expression_commit_msg, expression_metadata, numAuthorCreated)
+	commitMessage, details, err := helpers.CommitIterator(ctx, timeout, c, numAuthorCreated)
 	if err != nil {
 		return err
 	}
