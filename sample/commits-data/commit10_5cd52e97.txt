@@ -1,0 +1,17 @@
+cuj: Google meet CUJ test case
+
+A remote test calling Google meet service to do the google meet testing.
+Different sizes of conference room are designed as different sub tests.
+
+To run Google Meet CUJ, an external static room server has to be set up
+and the test will conntect to join static meeting rooms.
+
+BUG=None
+TEST=tast run -var=ui.cuj_username=x -var=ui.cuj_password=x -var=ui.meet_account=x -var=ui.meet_url=x $DUT ui.GoogleMeetCUJ.*
+
+Change-Id: I9e433cb0e99c7e41fa65c70bce19d25b94405bdd
+Reviewed-on: https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2757588
+Reviewed-by: Shuhei Takahashi <nya@chromium.org>
+Reviewed-by: Alex Bergman <abergman@google.com>
+Commit-Queue: Shuhei Takahashi <nya@chromium.org>
+Tested-by: Shuhei Takahashi <nya@chromium.org>

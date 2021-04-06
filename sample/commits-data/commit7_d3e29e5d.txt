@@ -1,0 +1,20 @@
+Promote crash.User.{root,chronos}_*real_consent.
+
+The crash.User.root_crasher_real_consent and
+crash.User.chronos_crasher_real_consent tests have now passed on all
+runs on tastboard.
+
+See
+https://tastboard.corp.google.com/test/crash.User.root_crasher_real_consent
+and
+https://tastboard.corp.google.com/test/crash.User.chronos_crasher_real_consent
+
+BUG=chromium:1190212
+TEST=CQ
+
+Change-Id: Ie0fce0e993800b12696b9e28d22fe7935df5d7f1
+Reviewed-on: https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2806271
+Tested-by: Miriam Zimmerman <mutexlox@chromium.org>
+Reviewed-by: Ian Barkley-Yeung <iby@chromium.org>
+Reviewed-by: Hidehiko Abe <hidehiko@chromium.org>
+Commit-Queue: Miriam Zimmerman <mutexlox@chromium.org>

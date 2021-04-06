@@ -3,6 +3,7 @@ package helpers
 import (
 	"bufio"
 	"encoding/csv"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"os"
@@ -10,11 +11,30 @@ import (
 	"strings"
 )
 
+// Parses commit metadata and creates contributions.csv
 func Parser(relativeFilePath string, pathCSV string, numAuthorCreated map[string]int, numAuthorReviewed map[string]int) error {
 	files, err := ioutil.ReadDir(relativeFilePath)
 	if err != nil {
 		return err
 	}
+
+	err = getReviewerNames(files, relativeFilePath, numAuthorReviewed)
+	if err != nil {
+		return err
+	}
+
+	csvData := make_csv(numAuthorCreated, numAuthorReviewed)
+
+	err = write_csv(relativeFilePath, numAuthorCreated, numAuthorReviewed, csvData)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return nil
+}
+
+// Gets all reviewer names from all the previously obtained commit(.txt)
+// files of the form commit{index}_hash.txt
+func getReviewerNames(files []fs.FileInfo, relativeFilePath string, numAuthorReviewed map[string]int) error {
 	for _, f := range files {
 		file, err := os.Open(relativeFilePath + f.Name())
 
@@ -33,32 +53,27 @@ func Parser(relativeFilePath string, pathCSV string, numAuthorCreated map[string
 		}
 		file.Close()
 	}
+	return nil
+}
 
+// Makes CSV file csvData from the maps numAuthorCreated and numAuthorReviewed
+func make_csv(numAuthorCreated map[string]int, numAuthorReviewed map[string]int) [][]string {
 	csvData := [][]string{{"Contributor", "Created", "Reviewed"}}
-	// var authorList []string
 
 	for author := range numAuthorReviewed {
-		// authorList = append(authorList, author)
 		csvData = append(csvData, []string{author, strconv.Itoa(numAuthorCreated[author]), strconv.Itoa(numAuthorReviewed[author])})
-		// fmt.Printf("\nAuthor %s reviwed %d commits and created %d  \n", author, numAuthorReviewed[author], numAuthorCreated[author])
 	}
 
 	for author := range numAuthorCreated {
 		if _, ok := numAuthorReviewed[author]; !ok {
-			// authorList = append(authorList, strconv.Itoa(val))
 			csvData = append(csvData, []string{author, strconv.Itoa(numAuthorCreated[author]), strconv.Itoa(numAuthorReviewed[author])})
 		}
-		// fmt.Printf("\nAuthor %s reviwed %d commits and created %d  \n", author, numAuthorReviewed[author], numAuthorCreated[author])
 	}
-
-	err = make_csv(relativeFilePath, numAuthorCreated, numAuthorReviewed, csvData)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return nil
+	return csvData
 }
 
-func make_csv(relativeFilePath string, numAuthorCreated map[string]int, numAuthorReviewed map[string]int, csvData [][]string) error {
+// Writes CSV file csvData into contributions.csv in path relativeFilePath
+func write_csv(relativeFilePath string, numAuthorCreated map[string]int, numAuthorReviewed map[string]int, csvData [][]string) error {
 
 	file, err := os.Create(relativeFilePath + "/" + "contributions.csv")
 	if err != nil {

@@ -8,7 +8,7 @@ import (
 	"github.com/mafredri/cdp/protocol/page"
 )
 
-// navigate to the URL and wait for DOMContentEventFired. An error is
+// Navigate to the URL and waits for DOMContentEventFired. An error is
 // returned if timeout happens before DOMContentEventFired.
 func Navigate(ctx context.Context, pageClient cdp.Page, url string, timeout time.Duration) error {
 	// fmt.Printf("\nInside navigate")
