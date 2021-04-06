@@ -17,7 +17,7 @@ git clone git@github.com:iraj465/Commitizer.git
 ### Run headless chrome
 
 ```bash
-docker container run -d -p 9222:9222 zenika/alpine-chrome --no-sandbox --remote-debugging-address=0.0.0.0 --remote-debugging-port=9222 https://www.chromestatus.com/
+docker container run -d -p 9222:9222 zenika/alpine-chrome --no-sandbox --remote-debugging-address=0.0.0.0 --remote-debugging-port=9222
 
 ```
 For headless chrome take a look [here](https://developers.google.com/web/updates/2017/04/headless-chrome)
@@ -38,9 +38,16 @@ go build -o exec-name
 The proceed with executable as outline above.
 
 ### Using Docker
+For headless chrome docker image
+```bash
+docker container run -d --rm -p 9222:9222 zenika/alpine-chrome --no-sandbox --remote-debugging-address=0.0.0.0 --remote-debugging-port=9222
 ```
-docker build -t commitizer .
-docker run -dp 4200:4200 commitizer sh
+
+For building commitizer_app
+```bash
+docker build -t commitizer_app .
+
+docker run -it --rm --net host commitizer_app
 ```
 ---
 ## Command line options
