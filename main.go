@@ -8,7 +8,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"sync"
 	"time"
 
 	"github.com/iraj465/commitizer/helpers"
@@ -32,15 +31,13 @@ type DocumentInfo struct {
 
 // Command line variables
 var (
-	baseDir           = "sample/commits-data/" // default base directory for string commit files
-	repoURL           = flag.String("repoURL", "https://chromium.googlesource.com/chromiumos/platform/tast-tests/", "Repository URL to obtain the commits from")
-	numCommits        = flag.Int("numCommits", 10, "Number of commits to be obtained")
-	branchName        = flag.String("branchName", "main", "Name of the branch name on the first page to start the commitzer process")
-	timeout           = flag.Int("timeout", 30, "Sets the context timeout value")
-	pathCommits       = flag.String("pathCommits", baseDir, "Path to store the commit files")
-	pathCSV           = flag.String("pathCSV", baseDir, "Path to store the CSV file")
-	numAuthorCreated  = make(map[string]int) // map that stores number of commits created by each author
-	numAuthorReviewed = make(map[string]int) // map that stores number of commits reviewed by each author
+	baseDir     = "sample/commits-data/" // default base directory for string commit files
+	repoURL     = flag.String("repoURL", "https://chromium.googlesource.com/chromiumos/platform/tast-tests/", "Repository URL to obtain the commits from")
+	numCommits  = flag.Int("numCommits", 10, "Number of commits to be obtained")
+	branchName  = flag.String("branchName", "main", "Name of the branch name on the first page to start the commitzer process")
+	timeout     = flag.Int("timeout", 50, "Sets the context timeout value")
+	pathCommits = flag.String("pathCommits", baseDir, "Path to store the commit files")
+	pathCSV     = flag.String("pathCSV", baseDir, "Path to store the CSV file")
 )
 
 func main() {
@@ -62,6 +59,8 @@ func main() {
 	if relfpath == "." {
 		relfpath = baseDir
 	}
+	numAuthorCreated := make(map[string]int)  // map that stores number of commits created by each author
+	numAuthorReviewed := make(map[string]int) // map that stores number of commits reviewed by each author
 
 	// Function that uses helper funcs in helpers/ and does all the work
 	err = commitizer_main(time.Duration(*timeout*int(time.Second)), relfpath, numAuthorCreated)
@@ -70,7 +69,7 @@ func main() {
 	}
 
 	// Parses commit metadata and creates contributions.csv
-	err = parser(relfpath, *pathCSV)
+	err = helpers.Parser(relfpath, *pathCSV, numAuthorCreated, numAuthorReviewed)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -105,9 +104,8 @@ func commitizer_main(timeout time.Duration, relativeFilePath string, numAuthorCr
 	if err != nil {
 		return err
 	}
-	// fmt.Printf("Navigated to: %s\n", *myURL)
-	// Parse information from the document by evaluating JavaScript.
 
+	// Parse information from the document by evaluating JavaScript.
 	expression_commit_msg := `
 	new Promise((resolve, reject) => {
 		setTimeout(() => {
@@ -126,6 +124,7 @@ func commitizer_main(timeout time.Duration, relativeFilePath string, numAuthorCr
 			resolve({metadata});
 		}, 500);
 	});`
+
 	var info DocumentInfo
 
 	url, err := helpers.GetBranchURL(ctx, c, *branchName)
@@ -142,27 +141,17 @@ func commitizer_main(timeout time.Duration, relativeFilePath string, numAuthorCr
 	fmt.Printf("\nNavigated to: %s\n", info.BranchURL)
 
 	commitIndex := 0
-	var wg sync.WaitGroup
-	wg.Add(*numCommits)
 	for commitIndex < *numCommits {
 		commitMessage, details, err := helpers.CommitIterator(ctx, timeout, c, expression_commit_msg, expression_metadata, numAuthorCreated)
-		select {
-		case <-ctx.Done():
-			log.Println("\nInfo:Please consider increasing timeout")
-			return ctx.Err()
-		default:
-		}
 
 		if err != nil {
 			return err
 		}
 
-		go func(commitIndex int) {
-			err = helpers.MakeCommitFile(commitMessage, details.Hash, relativeFilePath, commitIndex)
-			if err != nil {
-				log.Fatal(err)
-			}
-		}(commitIndex)
+		err = helpers.MakeCommitFile(commitMessage, details.Hash, relativeFilePath, commitIndex)
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		err = helpers.Navigate(ctx, c.Page, details.NextCommitHref, domLoadTimeout)
 		if err != nil {

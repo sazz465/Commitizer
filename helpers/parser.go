@@ -1,4 +1,4 @@
-package main
+package helpers
 
 import (
 	"bufio"
@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func parser(relativeFilePath string, pathCSV string) error {
+func Parser(relativeFilePath string, pathCSV string, numAuthorCreated map[string]int, numAuthorReviewed map[string]int) error {
 	files, err := ioutil.ReadDir(relativeFilePath)
 	if err != nil {
 		return err
