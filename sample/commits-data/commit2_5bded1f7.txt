@@ -1,0 +1,22 @@
+crostini: Add Notify to the CQ
+
+Last 2 weeks of test runs:
+https://stainless.corp.google.com/search?view=matrix&row=build&col=test&first_date=2021-03-19&last_date=2021-04-01&test=tast.crostini.Notify.*_stable&exclude_cts=false&exclude_not_run=false&exclude_non_release=true&exclude_au=true&exclude_acts=true&exclude_retried=false&exclude_non_production=false
+
+The failures on DLC prior to 13875.0.0 are expected, as this was
+before the fix was upreved into Chrome OS. Aside from that, we have 6
+failures: 1 because the DUT lost SSH connectivity, 3 because Chrome
+became unresponsive or crashed and we failed to reset the
+precondition, a 2 that couldn't find the precondition but show it in
+the screenshot. Only the last of these is test-specific, and that
+should be fixed by the previous CL in this chain.
+
+BUG=chromium:1190645
+TEST=Ran test
+
+Disallow-Recycled-Builds: test-failures
+Change-Id: Ib22db4e40b237d7f853c75f777984fe215529a77
+Reviewed-on: https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2797677
+Reviewed-by: Keigo Oka <oka@chromium.org>
+Commit-Queue: Fergus Dall <sidereal@google.com>
+Tested-by: Fergus Dall <sidereal@google.com>

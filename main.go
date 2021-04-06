@@ -34,7 +34,7 @@ var (
 	baseDir     = "sample/commits-data/" // default base directory for string commit files
 	repoURL     = flag.String("repoURL", "https://chromium.googlesource.com/chromiumos/platform/tast-tests/", "Repository URL to obtain the commits from")
 	numCommits  = flag.Int("numCommits", 10, "Number of commits to be obtained")
-	branchName  = flag.String("branchName", "main", "Name of the branch name on the first page to start the commitzer process")
+	branchName  = flag.String("branchName", "main", "Name of the branch on the first page to start the commitizer process")
 	timeout     = flag.Int("timeout", 50, "Sets the context timeout value")
 	pathCommits = flag.String("pathCommits", baseDir, "Path to store the commit files")
 	pathCSV     = flag.String("pathCSV", baseDir, "Path to store the CSV file")

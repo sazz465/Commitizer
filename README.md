@@ -57,7 +57,7 @@ docker run -it --rm --net host commitizer_app
 Usage of ./commitizer:
 
   -branchName string
-        Name of the branch name on the first page to start the commitzer process (default "main")
+        Name of the branch on the first page to start the commitizer process (default "main")
   -numCommits int
         Number of commits to be obtained (default 10)
   -pathCSV string
