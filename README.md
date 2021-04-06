@@ -35,7 +35,7 @@ If you wish to generate your own commitizer executable with name `exec-name`, ru
 ```
 go build -o exec-name
 ```
-The proceed with executable as outline above.
+The proceed with executable as outlined above.
 
 ## Using Docker
 For headless chrome docker image
@@ -43,11 +43,11 @@ For headless chrome docker image
 docker container run -d --rm -p 9222:9222 zenika/alpine-chrome --no-sandbox --remote-debugging-address=0.0.0.0 --remote-debugging-port=9222
 ```
 
-For building commitizer_app
+For building commitizer
 ```bash
-docker build -t commitizer_app .
+docker build -t commitizer .
 
-docker run -it --rm --net host commitizer_app
+docker run -it --rm --net host commitizer
 ```
 ---
 ## Command line options
