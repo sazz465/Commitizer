@@ -1,0 +1,16 @@
+crostini: Make Notify poll for 10 seconds
+
+There have been a couple of test runs which failed to find the
+notification, where it appears on the screenshot. This probably means
+we are just giving up too quickly.
+
+BUG=chromium:1190645
+TEST=Ran test
+
+Disallow-Recycled-Builds: test-failures
+Change-Id: I525bcae241c302daef245faf3268d62dbb1a67c2
+Reviewed-on: https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2797676
+Reviewed-by: Keigo Oka <oka@chromium.org>
+Reviewed-by: Matthew Warton <mwarton@google.com>
+Commit-Queue: Fergus Dall <sidereal@google.com>
+Tested-by: Fergus Dall <sidereal@google.com>
