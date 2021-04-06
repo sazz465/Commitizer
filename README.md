@@ -37,7 +37,7 @@ go build -o exec-name
 ```
 The proceed with executable as outline above.
 
-### Using Docker
+## Using Docker
 For headless chrome docker image
 ```bash
 docker container run -d --rm -p 9222:9222 zenika/alpine-chrome --no-sandbox --remote-debugging-address=0.0.0.0 --remote-debugging-port=9222
