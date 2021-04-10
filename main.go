@@ -47,10 +47,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	numAuthorCreated := make(map[string]int)  // map that stores number of commits created by each author
 	numAuthorReviewed := make(map[string]int) // map that stores number of commits reviewed by each author
 
-	err = commitizer_main(time.Duration(*timeout*int(time.Second)), relfPath, numAuthorCreated)
+	err = commitizerMain(time.Duration(*timeout*int(time.Second)), relfPath, numAuthorCreated)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -85,7 +86,7 @@ func getRelativePath(pathCommits string) (string, error) {
 
 // Function that uses helper funcs in helpers/ and does all the work
 // of getting numCommits number of commits and makes corresponding commit files
-func commitizer_main(timeout time.Duration, relativeFilePath string, numAuthorCreated map[string]int) error {
+func commitizerMain(timeout time.Duration, relativeFilePath string, numAuthorCreated map[string]int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 

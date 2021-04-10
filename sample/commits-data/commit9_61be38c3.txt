@@ -1,0 +1,15 @@
+wifi.Driver: drop obsolete chips
+
+ * Atheros/ath9k: AUE or never supported
+ * Marvell 8797: AUE
+ * Marvell 8887: never launched
+ * Marvell 8897 PCIe: never launched
+
+BUG=none
+TEST=run it
+
+Change-Id: I6bd58e82e6da996b27a0d083948b7576842d1c98
+Reviewed-on: https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2811580
+Tested-by: Brian Norris <briannorris@chromium.org>
+Reviewed-by: Yen-lin Lai <yenlinlai@chromium.org>
+Commit-Queue: Brian Norris <briannorris@chromium.org>

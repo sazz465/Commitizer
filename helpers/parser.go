@@ -23,9 +23,9 @@ func Parser(relativeFilePath string, pathCSV string, numAuthorCreated map[string
 		return err
 	}
 
-	csvData := make_csv(numAuthorCreated, numAuthorReviewed)
+	csvData := makeCSV(numAuthorCreated, numAuthorReviewed)
 
-	err = write_csv(relativeFilePath, numAuthorCreated, numAuthorReviewed, csvData)
+	err = writeCSV(relativeFilePath, numAuthorCreated, numAuthorReviewed, csvData)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -57,7 +57,7 @@ func getReviewerNames(files []fs.FileInfo, relativeFilePath string, numAuthorRev
 }
 
 // Makes CSV file csvData from the maps numAuthorCreated and numAuthorReviewed
-func make_csv(numAuthorCreated map[string]int, numAuthorReviewed map[string]int) [][]string {
+func makeCSV(numAuthorCreated map[string]int, numAuthorReviewed map[string]int) [][]string {
 	csvData := [][]string{{"Contributor", "Created", "Reviewed"}}
 
 	for author := range numAuthorReviewed {
@@ -73,7 +73,7 @@ func make_csv(numAuthorCreated map[string]int, numAuthorReviewed map[string]int)
 }
 
 // Writes CSV file csvData into contributions.csv in path relativeFilePath
-func write_csv(relativeFilePath string, numAuthorCreated map[string]int, numAuthorReviewed map[string]int, csvData [][]string) error {
+func writeCSV(relativeFilePath string, numAuthorCreated map[string]int, numAuthorReviewed map[string]int, csvData [][]string) error {
 
 	file, err := os.Create(relativeFilePath + "/" + "contributions.csv")
 	if err != nil {
