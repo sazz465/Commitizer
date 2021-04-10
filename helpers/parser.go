@@ -5,17 +5,18 @@ import (
 	"encoding/csv"
 	"io/fs"
 	"io/ioutil"
-	"log"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // Parses commit metadata and creates contributions.csv
 func Parser(relativeFilePath string, pathCSV string, numAuthorCreated map[string]int, numAuthorReviewed map[string]int) error {
 	files, err := ioutil.ReadDir(relativeFilePath)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "couldn't read directory with relative path relativeFilePath")
 	}
 
 	err = getReviewerNames(files, relativeFilePath, numAuthorReviewed)
@@ -27,7 +28,7 @@ func Parser(relativeFilePath string, pathCSV string, numAuthorCreated map[string
 
 	err = writeCSV(relativeFilePath, numAuthorCreated, numAuthorReviewed, csvData)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	return nil
 }
@@ -37,11 +38,10 @@ func Parser(relativeFilePath string, pathCSV string, numAuthorCreated map[string
 func getReviewerNames(files []fs.FileInfo, relativeFilePath string, numAuthorReviewed map[string]int) error {
 	for _, f := range files {
 		file, err := os.Open(relativeFilePath + f.Name())
-
 		if err != nil {
-			return err
-
+			return errors.Wrap(err, "couldn't open file with relative path relativeFilePath")
 		}
+
 		scanner := bufio.NewScanner(file)
 		scanner.Split(bufio.ScanLines)
 
@@ -77,7 +77,7 @@ func writeCSV(relativeFilePath string, numAuthorCreated map[string]int, numAutho
 
 	file, err := os.Create(relativeFilePath + "/" + "contributions.csv")
 	if err != nil {
-		return err
+		return errors.Wrap(err, "couldn't create contributions.csv")
 	}
 	defer file.Close()
 
@@ -87,7 +87,7 @@ func writeCSV(relativeFilePath string, numAuthorCreated map[string]int, numAutho
 	for _, value := range csvData {
 		err = writer.Write(value)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "couldn't write data to csvData")
 		}
 	}
 

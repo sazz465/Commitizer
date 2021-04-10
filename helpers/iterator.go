@@ -6,6 +6,7 @@ import (
 
 	"github.com/mafredri/cdp"
 	"github.com/mafredri/cdp/protocol/runtime"
+	"github.com/pkg/errors"
 )
 
 type CommitDetails struct {
@@ -42,10 +43,10 @@ func CommitIterator(ctx context.Context, c *cdp.Client, numAuthorCreated map[str
 	evalArgsCommitMessage := runtime.NewEvaluateArgs(expressionCommitMessage).SetAwaitPromise(true).SetReturnByValue(true)
 	evalCommitMessage, err := c.Runtime.Evaluate(ctx, evalArgsCommitMessage)
 	if err != nil {
-		return info.CommitMessage, details, err
+		return info.CommitMessage, details, errors.Wrap(err, "Cannot evaluate BranchURL javascript with cdp Client!")
 	}
 	if err = json.Unmarshal(evalCommitMessage.Result.Value, &info); err != nil {
-		return info.CommitMessage, details, err
+		return info.CommitMessage, details, errors.Wrap(err, "Cannot convert JSON to go Object")
 	}
 
 	expressionMetadata := `
@@ -62,10 +63,10 @@ func CommitIterator(ctx context.Context, c *cdp.Client, numAuthorCreated map[str
 	evalArgsMetadata := runtime.NewEvaluateArgs(expressionMetadata).SetAwaitPromise(true).SetReturnByValue(true)
 	evalMetadata, err := c.Runtime.Evaluate(ctx, evalArgsMetadata)
 	if err != nil {
-		return info.CommitMessage, details, err
+		return info.CommitMessage, details, errors.Wrap(err, "Cannot evaluate BranchURL javascript with cdp Client!")
 	}
 	if err = json.Unmarshal(evalMetadata.Result.Value, &info); err != nil {
-		return info.CommitMessage, details, err
+		return info.CommitMessage, details, errors.Wrap(err, "Cannot convert JSON to go Object")
 	}
 
 	// populates details: CommitDetails with data obtained from evaluating above javascript expressions

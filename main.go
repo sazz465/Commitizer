@@ -14,6 +14,7 @@ import (
 	"github.com/mafredri/cdp"
 	"github.com/mafredri/cdp/devtool"
 	"github.com/mafredri/cdp/rpcc"
+	"github.com/pkg/errors"
 )
 
 type CommitDetails struct {
@@ -76,7 +77,7 @@ func getRelativePath(pathCommits string) (string, error) {
 	// Finds relative file path of the provided path flag with baseDir
 	relfpath, err := filepath.Rel(baseDir, pathCommits)
 	if err != nil {
-		return relfpath, err
+		return relfpath, errors.Wrap(err, "couldn't find relative file path of provided path im flag with baseDir")
 	}
 	if relfpath == "." {
 		relfpath = baseDir
@@ -96,14 +97,14 @@ func commitizerMain(timeout time.Duration, relativeFilePath string, numAuthorCre
 	if err != nil {
 		pt, err = devt.Create(ctx)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "couldn't create cdp target")
 		}
 	}
 
 	// Initiate a new RPC connection to the Chrome DevTools Protocol target.
 	conn, err := rpcc.DialContext(ctx, pt.WebSocketDebuggerURL)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "couldn't initiate new rpc connection with cdp target")
 	}
 	defer conn.Close() // Leaving connections open will leak memory.
 
@@ -164,7 +165,7 @@ func getCommitAndMakeFile(ctx context.Context, c *cdp.Client, timeout time.Durat
 
 	err = helpers.MakeCommitFile(commitMessage, details.Hash, relativeFilePath, commitIndex)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "couldn't open file with relative path relativeFilePath")
 	}
 
 	err = helpers.Navigate(ctx, c.Page, details.NextCommitHref, domLoadTimeout)
