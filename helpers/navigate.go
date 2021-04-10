@@ -10,10 +10,10 @@ import (
 
 // Navigate to the URL and waits for DOMContentEventFired. An error is
 // returned if timeout happens before DOMContentEventFired.
-func Navigate(ctx context.Context, pageClient cdp.Page, url string, timeout time.Duration) error {
+func Navigate(ctx context.Context, pageClient cdp.Page, url string, domLoadTimeout time.Duration) error {
 	// fmt.Printf("\nInside navigate")
 	var cancel context.CancelFunc
-	ctx, cancel = context.WithTimeout(ctx, timeout)
+	ctx, cancel = context.WithTimeout(ctx, domLoadTimeout)
 	defer cancel()
 
 	// Make sure Page events are enabled.

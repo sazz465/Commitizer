@@ -3,7 +3,6 @@ package helpers
 import (
 	"context"
 	"encoding/json"
-	"time"
 
 	"github.com/mafredri/cdp"
 	"github.com/mafredri/cdp/protocol/runtime"
@@ -24,9 +23,9 @@ type DocumentInfo struct {
 // Evaluates javascript expressions;
 // (1) `expressionCommitMessage` to get commit-message
 // (2) `expressionMetadata` to get the commit-metadata
-func CommitIterator(ctx context.Context, timeout time.Duration, c *cdp.Client, numAuthorCreated map[string]int) (string, CommitDetails, error) {
+func CommitIterator(ctx context.Context, c *cdp.Client, numAuthorCreated map[string]int) (string, CommitDetails, error) {
 	var cancel context.CancelFunc
-	ctx, cancel = context.WithTimeout(ctx, timeout)
+	ctx, cancel = context.WithCancel(ctx)
 	defer cancel()
 
 	var info DocumentInfo
