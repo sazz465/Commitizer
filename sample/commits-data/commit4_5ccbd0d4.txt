@@ -1,0 +1,12 @@
+dutfs: Add Exists
+
+This method checks whether a file or directory exists on the DUT.
+
+BUG=b:153736350
+TEST=CQ passes
+
+Change-Id: I7c3264f09bd26c1db95c2fe9f43a8c65cf081b46
+Reviewed-on: https://chromium-review.googlesource.com/c/chromiumos/platform/tast-tests/+/2816399
+Commit-Queue: Tom Hughes <tomhughes@chromium.org>
+Tested-by: Tom Hughes <tomhughes@chromium.org>
+Reviewed-by: Ben Reich <benreich@chromium.org>

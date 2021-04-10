@@ -3,10 +3,10 @@ package helpers
 import (
 	"context"
 	"encoding/json"
-	"time"
 
 	"github.com/mafredri/cdp"
 	"github.com/mafredri/cdp/protocol/runtime"
+	"github.com/pkg/errors"
 )
 
 type CommitDetails struct {
@@ -22,34 +22,34 @@ type DocumentInfo struct {
 }
 
 // Evaluates javascript expressions;
-// (1) `expression_commit_msg` to get commit-message
-// (2) `expression_metadata` to get the commit-metadata
-func CommitIterator(ctx context.Context, timeout time.Duration, c *cdp.Client, numAuthorCreated map[string]int) (string, CommitDetails, error) {
+// (1) `expressionCommitMessage` to get commit-message
+// (2) `expressionMetadata` to get the commit-metadata
+func CommitIterator(ctx context.Context, c *cdp.Client, numAuthorCreated map[string]int) (string, CommitDetails, error) {
 	var cancel context.CancelFunc
-	ctx, cancel = context.WithTimeout(ctx, timeout)
+	ctx, cancel = context.WithCancel(ctx)
 	defer cancel()
 
 	var info DocumentInfo
 	var details CommitDetails
 
-	expression_commit_msg := `
+	expressionCommitMessage := `
 	new Promise((resolve, reject) => {
 		setTimeout(() => {
 			const message = document.querySelector("body > div > div > pre").innerText;
 			resolve({message});
 		}, 500);
 	});`
-	// Evaluates javascript expression `expression_commit_msg`
-	evalArgs_commit_msg := runtime.NewEvaluateArgs(expression_commit_msg).SetAwaitPromise(true).SetReturnByValue(true)
-	eval_commit_msg, err := c.Runtime.Evaluate(ctx, evalArgs_commit_msg)
+	// Evaluates javascript expression `expressionCommitMessage`
+	evalArgsCommitMessage := runtime.NewEvaluateArgs(expressionCommitMessage).SetAwaitPromise(true).SetReturnByValue(true)
+	evalCommitMessage, err := c.Runtime.Evaluate(ctx, evalArgsCommitMessage)
 	if err != nil {
-		return info.CommitMessage, details, err
+		return info.CommitMessage, details, errors.Wrap(err, "Cannot evaluate BranchURL javascript with cdp Client!")
 	}
-	if err = json.Unmarshal(eval_commit_msg.Result.Value, &info); err != nil {
-		return info.CommitMessage, details, err
+	if err = json.Unmarshal(evalCommitMessage.Result.Value, &info); err != nil {
+		return info.CommitMessage, details, errors.Wrap(err, "Cannot convert JSON to go Object")
 	}
 
-	expression_metadata := `
+	expressionMetadata := `
 	new Promise((resolve, reject) => {
 		setTimeout(() => {
 			const commitHash = document.querySelector("body > div > div > div.u-monospace.Metadata > table > tbody > tr:nth-child(1) > td:nth-child(2)").innerHTML;
@@ -59,14 +59,14 @@ func CommitIterator(ctx context.Context, timeout time.Duration, c *cdp.Client, n
 			resolve({metadata});
 		}, 500);
 	});`
-	// Evaluates javascript expression `expression_metadata`
-	evalArgs_metadata := runtime.NewEvaluateArgs(expression_metadata).SetAwaitPromise(true).SetReturnByValue(true)
-	eval_metadata, err := c.Runtime.Evaluate(ctx, evalArgs_metadata)
+	// Evaluates javascript expression `expressionMetadata`
+	evalArgsMetadata := runtime.NewEvaluateArgs(expressionMetadata).SetAwaitPromise(true).SetReturnByValue(true)
+	evalMetadata, err := c.Runtime.Evaluate(ctx, evalArgsMetadata)
 	if err != nil {
-		return info.CommitMessage, details, err
+		return info.CommitMessage, details, errors.Wrap(err, "Cannot evaluate BranchURL javascript with cdp Client!")
 	}
-	if err = json.Unmarshal(eval_metadata.Result.Value, &info); err != nil {
-		return info.CommitMessage, details, err
+	if err = json.Unmarshal(evalMetadata.Result.Value, &info); err != nil {
+		return info.CommitMessage, details, errors.Wrap(err, "Cannot convert JSON to go Object")
 	}
 
 	// populates details: CommitDetails with data obtained from evaluating above javascript expressions

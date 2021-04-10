@@ -14,6 +14,7 @@ import (
 	"github.com/mafredri/cdp"
 	"github.com/mafredri/cdp/devtool"
 	"github.com/mafredri/cdp/rpcc"
+	"github.com/pkg/errors"
 )
 
 type CommitDetails struct {
@@ -47,10 +48,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	numAuthorCreated := make(map[string]int)  // map that stores number of commits created by each author
 	numAuthorReviewed := make(map[string]int) // map that stores number of commits reviewed by each author
 
-	err = commitizer_main(time.Duration(*timeout*int(time.Second)), relfPath, numAuthorCreated)
+	err = commitizerMain(time.Duration(*timeout*int(time.Second)), relfPath, numAuthorCreated)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -75,7 +77,7 @@ func getRelativePath(pathCommits string) (string, error) {
 	// Finds relative file path of the provided path flag with baseDir
 	relfpath, err := filepath.Rel(baseDir, pathCommits)
 	if err != nil {
-		return relfpath, err
+		return relfpath, errors.Wrap(err, "couldn't find relative file path of provided path im flag with baseDir")
 	}
 	if relfpath == "." {
 		relfpath = baseDir
@@ -85,7 +87,7 @@ func getRelativePath(pathCommits string) (string, error) {
 
 // Function that uses helper funcs in helpers/ and does all the work
 // of getting numCommits number of commits and makes corresponding commit files
-func commitizer_main(timeout time.Duration, relativeFilePath string, numAuthorCreated map[string]int) error {
+func commitizerMain(timeout time.Duration, relativeFilePath string, numAuthorCreated map[string]int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
@@ -95,14 +97,14 @@ func commitizer_main(timeout time.Duration, relativeFilePath string, numAuthorCr
 	if err != nil {
 		pt, err = devt.Create(ctx)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "couldn't create cdp target")
 		}
 	}
 
 	// Initiate a new RPC connection to the Chrome DevTools Protocol target.
 	conn, err := rpcc.DialContext(ctx, pt.WebSocketDebuggerURL)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "couldn't initiate new rpc connection with cdp target")
 	}
 	defer conn.Close() // Leaving connections open will leak memory.
 
@@ -156,14 +158,14 @@ func navigateToBranch(ctx context.Context, c *cdp.Client, info DocumentInfo, bra
 // and makes a commit file (.txt), and then navigates to the next commit page
 func getCommitAndMakeFile(ctx context.Context, c *cdp.Client, timeout time.Duration, info DocumentInfo, commitIndex int, numAuthorCreated map[string]int, relativeFilePath string, domLoadTimeout time.Duration) error {
 
-	commitMessage, details, err := helpers.CommitIterator(ctx, timeout, c, numAuthorCreated)
+	commitMessage, details, err := helpers.CommitIterator(ctx, c, numAuthorCreated)
 	if err != nil {
 		return err
 	}
 
 	err = helpers.MakeCommitFile(commitMessage, details.Hash, relativeFilePath, commitIndex)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "couldn't open file with relative path relativeFilePath")
 	}
 
 	err = helpers.Navigate(ctx, c.Page, details.NextCommitHref, domLoadTimeout)
