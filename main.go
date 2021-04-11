@@ -126,7 +126,7 @@ func commitizerMain(timeout time.Duration, relativeFilePath string, numAuthorCre
 	// Loop for getting *numCommits number of commits by calling getCommitAndMakeFile and making commit file every time
 	commitIndex := 0
 	for commitIndex < *numCommits {
-		err = getCommitAndMakeFile(ctx, c, timeout, info, commitIndex, numAuthorCreated, relativeFilePath, domLoadTimeout)
+		err = getCommitAndMakeFile(ctx, c, info, commitIndex, numAuthorCreated, relativeFilePath, domLoadTimeout)
 		if err != nil {
 			return err
 		}
@@ -156,7 +156,7 @@ func navigateToBranch(ctx context.Context, c *cdp.Client, info DocumentInfo, bra
 
 // Gets the commit which is the commitIndex(^th) commit
 // and makes a commit file (.txt), and then navigates to the next commit page
-func getCommitAndMakeFile(ctx context.Context, c *cdp.Client, timeout time.Duration, info DocumentInfo, commitIndex int, numAuthorCreated map[string]int, relativeFilePath string, domLoadTimeout time.Duration) error {
+func getCommitAndMakeFile(ctx context.Context, c *cdp.Client, info DocumentInfo, commitIndex int, numAuthorCreated map[string]int, relativeFilePath string, domLoadTimeout time.Duration) error {
 
 	commitMessage, details, err := helpers.CommitIterator(ctx, c, numAuthorCreated)
 	if err != nil {
