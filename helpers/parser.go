@@ -13,20 +13,20 @@ import (
 )
 
 // Parses commit metadata and creates contributions.csv
-func Parser(relativeFilePath string, pathCSV string, numAuthorCreated map[string]int, numAuthorReviewed map[string]int) error {
-	files, err := ioutil.ReadDir(relativeFilePath)
+func Parser(commitsFilePath string, csvPath string, numAuthorCreated map[string]int, numAuthorReviewed map[string]int) error {
+	files, err := ioutil.ReadDir(commitsFilePath)
 	if err != nil {
-		return errors.Wrap(err, "couldn't read directory with relative path relativeFilePath")
+		return errors.Wrap(err, "couldn't read path directory passed in commitsFilePath")
 	}
 
-	err = getReviewerNames(files, relativeFilePath, numAuthorReviewed)
+	err = getReviewerNames(files, commitsFilePath, numAuthorReviewed)
 	if err != nil {
 		return err
 	}
 
 	csvData := makeCSV(numAuthorCreated, numAuthorReviewed)
 
-	err = writeCSV(relativeFilePath, numAuthorCreated, numAuthorReviewed, csvData)
+	err = writeCSV(csvPath, numAuthorCreated, numAuthorReviewed, csvData)
 	if err != nil {
 		return err
 	}
@@ -35,11 +35,11 @@ func Parser(relativeFilePath string, pathCSV string, numAuthorCreated map[string
 
 // Gets all reviewer names from all the previously obtained commit(.txt)
 // files of the form commit{index}_hash.txt
-func getReviewerNames(files []fs.FileInfo, relativeFilePath string, numAuthorReviewed map[string]int) error {
+func getReviewerNames(files []fs.FileInfo, commitsFilePath string, numAuthorReviewed map[string]int) error {
 	for _, f := range files {
-		file, err := os.Open(relativeFilePath + f.Name())
+		file, err := os.Open(commitsFilePath + "/" + f.Name())
 		if err != nil {
-			return errors.Wrap(err, "couldn't open file with relative path relativeFilePath")
+			return errors.Wrap(err, "couldn't open file with path directory passed in commitsFilePath")
 		}
 
 		scanner := bufio.NewScanner(file)
@@ -72,10 +72,10 @@ func makeCSV(numAuthorCreated map[string]int, numAuthorReviewed map[string]int) 
 	return csvData
 }
 
-// Writes CSV file csvData into contributions.csv in path relativeFilePath
-func writeCSV(relativeFilePath string, numAuthorCreated map[string]int, numAuthorReviewed map[string]int, csvData [][]string) error {
+// Writes CSV file csvData into contributions.csv in path csvFilePath
+func writeCSV(csvFilePath string, numAuthorCreated map[string]int, numAuthorReviewed map[string]int, csvData [][]string) error {
 
-	file, err := os.Create(relativeFilePath + "/" + "contributions.csv")
+	file, err := os.Create(csvFilePath + "/" + "contributions.csv")
 	if err != nil {
 		return errors.Wrap(err, "couldn't create contributions.csv")
 	}

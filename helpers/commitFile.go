@@ -8,9 +8,9 @@ import (
 )
 
 // Makes commit file of the form `commit${commitIndex}_${commitHash}.txt`
-func MakeCommitFile(commitMessage string, commitHash string, fpath string, commitIndex int) error {
+func MakeCommitFile(commitMessage string, commitHash string, commitPath string, commitIndex int) error {
 
-	path := fpath + "/" + "commit" + strconv.Itoa(commitIndex+1) + "_" + commitHash + ".txt"
+	path := commitPath + "/" + "commit" + strconv.Itoa(commitIndex+1) + "_" + commitHash + ".txt"
 	f, err := os.Create(path)
 	if err != nil {
 		return errors.Wrap(err, "cannot create commit file")
