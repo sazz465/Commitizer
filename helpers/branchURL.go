@@ -41,8 +41,6 @@ func GetBranchURL(ctx context.Context, c *cdp.Client, requiredBranchName string)
 		childNodeIndex += 1
 	}
 
-	fmt.Printf("\nNavigated to branch with NAME : %q\n", info.BranchName)
-
 	return info.BranchURL, nil
 
 }

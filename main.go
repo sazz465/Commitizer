@@ -7,7 +7,6 @@ import (
 
 	"log"
 	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/iraj465/commitizer/helpers"
@@ -36,7 +35,7 @@ var (
 	repoURL     = flag.String("repoURL", "https://chromium.googlesource.com/chromiumos/platform/tast-tests/", "Repository URL to obtain the commits from")
 	numCommits  = flag.Int("numCommits", 10, "Number of commits to be obtained")
 	branchName  = flag.String("branchName", "main", "Name of the branch on the first page to start the commitizer process")
-	timeout     = flag.Int("timeout", 50, "Sets the context timeout value")
+	timeout     = flag.Int("timeout", 15, "Sets the context timeout value")
 	pathCommits = flag.String("pathCommits", baseDir, "Path to store the commit files")
 	pathCSV     = flag.String("pathCSV", baseDir, "Path to store the CSV file")
 )
@@ -44,50 +43,59 @@ var (
 func main() {
 	flag.Parse()
 
-	relfPath, err := getRelativePath(*pathCommits)
+	outputFlagValues()
+
+	commitPath, err := getPath(*pathCommits)
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	numAuthorCreated := make(map[string]int)  // map that stores number of commits created by each author
 	numAuthorReviewed := make(map[string]int) // map that stores number of commits reviewed by each author
 
-	err = commitizerMain(time.Duration(*timeout*int(time.Second)), relfPath, numAuthorCreated)
+	err = commitizerMain(time.Duration(*timeout*int(time.Second)), commitPath, numAuthorCreated)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = helpers.Parser(relfPath, *pathCSV, numAuthorCreated, numAuthorReviewed)
+	csvPath, err := getPath(*pathCSV)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = helpers.Parser(commitPath, csvPath, numAuthorCreated, numAuthorReviewed)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 }
 
-// Gets relative path of the path passed in pathCommits flag with baseDir
-func getRelativePath(pathCommits string) (string, error) {
-	dirinfo, err := os.Stat(baseDir)
+// Lists all passed/default flag values
+func outputFlagValues() {
+	fmt.Println("---------------------------------------------")
+	fmt.Printf("\nRepo URL\t\t: %s\n", *repoURL)
+	fmt.Printf("Commits Num\t\t: %d\n", *numCommits)
+	fmt.Printf("Repo Branch Name\t: %s\n", *branchName)
+	fmt.Printf("Timeout \t\t: %d\n", *timeout)
+	fmt.Printf("Path for Commmits\t: %s\n", *pathCommits)
+	fmt.Printf("Path for CSV\t\t: %s\n", *pathCSV)
+
+	fmt.Println("---------------------------------------------")
+}
+
+// Creates path directory if not already present
+func getPath(path string) (string, error) {
+	dirinfo, err := os.Stat(path)
 	if err != nil || !dirinfo.IsDir() {
 		log.Println(err)
-		os.MkdirAll(baseDir, 0755)
-		fmt.Printf("\nDirectory %s is created\n", baseDir)
+		os.MkdirAll(path, 0755)
+		fmt.Printf("\nDirectory %s is created\n", path)
 
 	}
-
-	// Finds relative file path of the provided path flag with baseDir
-	relfpath, err := filepath.Rel(baseDir, pathCommits)
-	if err != nil {
-		return relfpath, errors.Wrap(err, "couldn't find relative file path of provided path im flag with baseDir")
-	}
-	if relfpath == "." {
-		relfpath = baseDir
-	}
-	return relfpath, nil
+	return path, nil
 }
 
 // Function that uses helper funcs in helpers/ and does all the work
 // of getting numCommits number of commits and makes corresponding commit files
-func commitizerMain(timeout time.Duration, relativeFilePath string, numAuthorCreated map[string]int) error {
+func commitizerMain(timeout time.Duration, commitsPath string, numAuthorCreated map[string]int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
@@ -126,13 +134,13 @@ func commitizerMain(timeout time.Duration, relativeFilePath string, numAuthorCre
 	// Loop for getting *numCommits number of commits by calling getCommitAndMakeFile and making commit file every time
 	commitIndex := 0
 	for commitIndex < *numCommits {
-		err = getCommitAndMakeFile(ctx, c, info, commitIndex, numAuthorCreated, relativeFilePath, domLoadTimeout)
+		err = getCommitAndMakeFile(ctx, c, info, commitIndex, numAuthorCreated, commitsPath, domLoadTimeout)
 		if err != nil {
 			return err
 		}
 
 		commitIndex += 1
-		fmt.Printf("Commit %d\n", commitIndex)
+		fmt.Printf("Commit %d obtained!\n", commitIndex)
 	}
 	return nil
 }
@@ -150,22 +158,21 @@ func navigateToBranch(ctx context.Context, c *cdp.Client, info DocumentInfo, bra
 	if err != nil {
 		return err
 	}
-	fmt.Printf("\nNavigated to: %s\n", info.BranchURL)
 	return nil
 }
 
 // Gets the commit which is the commitIndex(^th) commit
 // and makes a commit file (.txt), and then navigates to the next commit page
-func getCommitAndMakeFile(ctx context.Context, c *cdp.Client, info DocumentInfo, commitIndex int, numAuthorCreated map[string]int, relativeFilePath string, domLoadTimeout time.Duration) error {
+func getCommitAndMakeFile(ctx context.Context, c *cdp.Client, info DocumentInfo, commitIndex int, numAuthorCreated map[string]int, commitsPath string, domLoadTimeout time.Duration) error {
 
 	commitMessage, details, err := helpers.CommitIterator(ctx, c, numAuthorCreated)
 	if err != nil {
 		return err
 	}
 
-	err = helpers.MakeCommitFile(commitMessage, details.Hash, relativeFilePath, commitIndex)
+	err = helpers.MakeCommitFile(commitMessage, details.Hash, commitsPath, commitIndex)
 	if err != nil {
-		return errors.Wrap(err, "couldn't open file with relative path relativeFilePath")
+		return err
 	}
 
 	err = helpers.Navigate(ctx, c.Page, details.NextCommitHref, domLoadTimeout)
@@ -173,6 +180,5 @@ func getCommitAndMakeFile(ctx context.Context, c *cdp.Client, info DocumentInfo,
 		return err
 	}
 
-	fmt.Printf("\nNavigated to: %s\n", details.NextCommitHref)
 	return nil
 }

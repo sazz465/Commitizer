@@ -38,12 +38,7 @@ go build -o exec-name
 The proceed with executable as outlined above.
 
 ## Using Docker
-For headless chrome docker image
-```bash
-docker container run -d --rm -p 9222:9222 zenika/alpine-chrome --no-sandbox --remote-debugging-address=0.0.0.0 --remote-debugging-port=9222
-```
-
-For building commitizer
+For building commitizer with Headless chrome, run:
 ```bash
 docker build -t commitizer .
 
@@ -52,20 +47,11 @@ docker run -it --rm --net host commitizer
 ---
 ## Command line options
 
-
-```
-Usage of ./commitizer:
-
-  -branchName string
-        Name of the branch on the first page to start the commitizer process (default "main")
-  -numCommits int
-        Number of commits to be obtained (default 10)
-  -pathCSV string
-        Path to store the CSV file (default "sample/commits-data/")
-  -pathCommits string
-        Path to store the commit files (default "sample/commits-data/")
-  -repoURL string
-        Repository URL to obtain the commits from (default "https://chromium.googlesource.com/chromiumos/platform/tast-tests/")
-  -timeout int
-        Sets the context timeout value (default 30)
-```
+Flag Name | Default value | Description |
+---- | --- | --- |
+-repoURL | https://chromium.googlesource.com/chromiumos/platform/tast-tests/ |Repository URL to obtain the commits from |
+-numCommits | 10 | Number of commits to be obtained|
+-branchName  | main | Name of the branch on the first page to start the commitizer process |
+-timeout  | 15 | Sets the context timeout value|
+-pathCommits |sample/commits-data/ | Path to store the commit files |
+-pathCSV |sample/commits-data/ | Path to store the CSV file |
