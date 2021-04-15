@@ -49,9 +49,9 @@ docker run -it --rm --net host commitizer
 
 Flag Name | Default value | Description |
 ---- | --- | --- |
--repoURL | https://chromium.googlesource.com/chromiumos/platform/tast-tests/ |Repository URL to obtain the commits from |
--numCommits | 10 | Number of commits to be obtained|
--branchName  | main | Name of the branch on the first page to start the commitizer process |
--timeout  | 15 | Sets the context timeout value|
--pathCommits |sample/commits-data/ | Path to store the commit files |
--pathCSV |sample/commits-data/ | Path to store the CSV file |
+repoURL  | https://chromium.googlesource.com/chromiumos/platform/tast-tests/ |Repository URL to obtain the commits from |
+numCommits  | 10 | Number of commits to be obtained|
+branchName  | main | Name of the branch on the first page to start the commitizer process |
+timeout   | 15 | Sets the context timeout value|
+pathCommits  |sample/commits-data/ | Path to store the commit files |
+pathCSV  |sample/commits-data/ | Path to store the CSV file |
